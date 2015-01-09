@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+  <Button
+      android:id="@+id/beacon_list"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="List of beacons"/>
+
+  <Button
+      android:id="@+id/map_position"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="Map with position"/>
+  
+  <Button
+      android:id="@+id/single_measure"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="Single Measurement"/>
+
+  <TextView
+      android:id="@+id/show_result"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content" />
+  
+</LinearLayout>

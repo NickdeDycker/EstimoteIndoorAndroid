@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="nl.mprog.estimoteindoorandroid"
+          android:versionCode="1"
+          android:versionName="1.0">
+
+  <uses-sdk
+      android:minSdkVersion="11"
+      android:targetSdkVersion="18"/>
+
+  <!-- Needed permissions in order to scan for beacons. -->
+  <uses-permission android:name="android.permission.BLUETOOTH"/>
+  <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+
+  <!-- Declaration that this app is usable on phones with Bluetooth Low Energy. -->
+  <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
+
+  <application
+      android:label="Estimote Indoor Location"
+      android:theme="@android:style/Theme.Holo.Light">
+
+    <activity
+        android:name="nl.mprog.estimoteindoorandroid.HomeActivity"
+        android:label="Estimote Demos"
+        android:screenOrientation="portrait">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN"/>
+        <category android:name="android.intent.category.LAUNCHER"/>
+      </intent-filter>
+    </activity>
+
+    <activity
+        android:name="nl.mprog.estimoteindoorandroid.BeaconListActivity"
+        android:label="Select Beacon"
+        android:screenOrientation="portrait"/>
+    
+    <activity
+        android:name="nl.mprog.estimoteindoorandroid.MapPosActivity"
+        android:label="See position on map"
+        android:screenOrientation="portrait"/>
+
+    <!-- Estimote service responsible for scanning beacons. -->
+    <service android:name="com.estimote.sdk.service.BeaconService"
+             android:exported="false"/>
+  </application>
+
+</manifest>
