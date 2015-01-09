@@ -5,7 +5,7 @@ This app is supposed is to find Estimote Beacons and return a somewhat reliable 
 Using multiple beacons, the app can also provide a location of the user if he/she is in range of at least 3 known beacons.
 The app will first be developed to become aware of the possibilities of the beacon and its accuracy.
 
-![App Layout](https://github.com/NickdeDycker/Estimote-Indoor-Android/blob/master/App%20layout.png)
+![App Layout](https://github.com/NickdeDycker/EstimoteIndoorAndroid/blob/master/App%20layout.png)
 
 HomeActivity
 =======================
