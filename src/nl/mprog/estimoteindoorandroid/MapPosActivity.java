@@ -12,7 +12,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
@@ -21,7 +20,6 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -30,16 +28,18 @@ import android.widget.TextView;
 import com.estimote.sdk.Beacon;
 import com.estimote.sdk.BeaconManager;
 import com.estimote.sdk.Region;
+import com.estimote.sdk.Utils;
 import com.estimote.sdk.utils.L;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class MapPosActivity extends Activity {
 	
   private SharedPreferences preferences;
   private SharedPreferences.Editor editPref;	
-  
+
   // Bluetooth and Beacon constants.
   private static final String TAG = BeaconListActivity.class.getSimpleName();
 
@@ -50,9 +50,17 @@ public class MapPosActivity extends Activity {
 
   private BeaconManager beaconManager;
 
+  private Bitmap workingBitmap;
+  
+  float mapXSize;
+  float mapYSize;
+  
   private int widthPixels;
   private int heightPixels;
   private ImageView mapImage;
+  
+  final ArrayList<Integer> minorValues = new ArrayList<Integer>();
+  final HashMap<Integer, ArrayList<Double>> distances = new HashMap<Integer, ArrayList<Double>>();
   
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -64,8 +72,8 @@ public class MapPosActivity extends Activity {
     editPref = preferences.edit();
 
     // Retrieve the size of the map/raster/picture.
-    final float mapXSize = preferences.getFloat("map_x", 10);
-    final float mapYSize = preferences.getFloat("map_y", 10);
+    mapXSize = preferences.getFloat("map_x", 10);
+    mapYSize = preferences.getFloat("map_y", 10);
     
     // Display the map size above the map.
     final TextView mapInfo = (TextView) findViewById(R.id.map_size);
@@ -80,6 +88,8 @@ public class MapPosActivity extends Activity {
     getScreenSizes(imageRaw);
     Bitmap imageScaled = Bitmap.createScaledBitmap(imageRaw, widthPixels, heightPixels, true);
     mapImage.setImageBitmap(imageScaled);
+    
+    workingBitmap = Bitmap.createScaledBitmap(imageRaw, widthPixels, heightPixels, true);
     
     // Button to get a dialog to change the map sizes.
     final Button changeMapSettings = (Button) findViewById(R.id.map_settings);
@@ -109,8 +119,10 @@ public class MapPosActivity extends Activity {
 		  @Override
 		  public void onClick(DialogInterface dialog, int i) {
 			// Save the changed x and y positions.
-			editPref.putFloat("map_x", Float.valueOf(inputXPos.getText().toString())); 
-			editPref.putFloat("map_y", Float.valueOf(inputYPos.getText().toString()));
+			mapXSize = Float.valueOf(inputXPos.getText().toString());
+			mapYSize = Float.valueOf(inputYPos.getText().toString());
+			editPref.putFloat("map_x", mapXSize); 
+			editPref.putFloat("map_y", mapYSize);
 			editPref.commit();
 		  }
 		});
@@ -132,15 +144,13 @@ public class MapPosActivity extends Activity {
     final Paint paintBlue = new Paint();
     paintBlue.setAntiAlias(true);
     paintBlue.setColor(Color.BLUE);
+    paintBlue.setAlpha(125);
     
     // Red paint to show the user on the map.
     final Paint paintRed = new Paint();
     paintRed.setAntiAlias(true);
     paintRed.setColor(Color.RED);
-    
-    // Predefined variables for creating a picture with drawn circles on it.
-    Bitmap workingBitmap = Bitmap.createScaledBitmap(imageRaw, widthPixels, heightPixels, true);
-    final Bitmap mutableBitmap = workingBitmap.copy(Bitmap.Config.ARGB_8888, true);
+    paintRed.setAlpha(125);
     
     // Configure BeaconManager.
     beaconManager = new BeaconManager(this);
@@ -153,21 +163,41 @@ public class MapPosActivity extends Activity {
           public void run() {
             // Note that beacons reported here are already sorted by estimated
             // distance between device and beacon.
-            getActionBar().setSubtitle("Found beacons: " + beaconsList.size());
+            getActionBar().setSubtitle("Found beacons(x): " + beaconsList.size());
             
-            // Draw circles for each beacon.
-	        Canvas canvas = new Canvas(mutableBitmap);
+            final Bitmap mutableBitmap = workingBitmap.copy(Bitmap.Config.ARGB_8888, true);
+            Canvas canvas = new Canvas(mutableBitmap);
+            
 	        for (int i = 0; i < beaconsList.size(); i++) {
-	          float[] locationBeacon = getLocation(beaconsList.get(i));
-	          canvas.drawCircle(locationBeacon[0], locationBeacon[1], 10, paintBlue);
+	          Beacon currentBeacon = beaconsList.get(i);
+	          int minorVal = currentBeacon.getMinor();
+
+	          if (preferences.getFloat("x" + minorVal, -1) < 0) {
+	        	  continue;
+	          }
+	          
+              // Check if the beacon is just found.
+              if (!minorValues.contains(minorVal)) {
+            	minorValues.add(minorVal);
+            	distances.put(minorVal, new ArrayList<Double>());
+              }
+            	
+              // Add the distance to the ArrayList and maintain a certain size.
+	          double distance = Utils.computeAccuracy(currentBeacon);
+              ArrayList<Double> distanceToBeacon = distances.get(minorVal);
+              distanceToBeacon.add(distance);
+              if (distanceToBeacon.size() > 20) {
+            	distanceToBeacon.remove(0);
+              }
+              
+              // Predefined variables for creating a picture with drawn circles on it.
+              float[] locationBeacon = getLocation(currentBeacon);
+
+              double distanceAverage = average(distances.get(minorVal));
+  	          canvas.drawCircle(locationBeacon[0], locationBeacon[1], (float) (distanceAverage/mapXSize) * widthPixels, paintBlue);
+  	          
+  	          mapInfo.setText("distance: " + distanceAverage);                  
 	        }
-	        /*
-	        float pictureX = locationBeacon[0] / (preferences.getFloat("x" + beaconsList.get(0).getMinor(), 0) / mapXSize);
-	        float pictureY = locationBeacon[0] / (preferences.getFloat("y" + beaconsList.get(0).getMinor(), 0) / mapYSize);
-	        mapInfo.setText("Beacon pos: " + locationBeacon[0] + " and " + locationBeacon[1] + " (" + 
-	        	preferences.getFloat("x" + beaconsList.get(0).getMinor(), 0) + ", " + preferences.getFloat("y" + beaconsList.get(0).getMinor(), 0) +
-	        	"\nMap Size: " + mapXSize + " and " + mapYSize + "\nPicture dimensions are: " + pictureX + " and " + pictureY);
-			*/
             
             // Method about measuring position of user if 3 beacons are near
 	        mapImage.setImageBitmap(mutableBitmap);
@@ -177,17 +207,23 @@ public class MapPosActivity extends Activity {
     });
   }
 
+  private double average(ArrayList<Double> distanceArray) {
+	double total = 0;
+	for (double element : distanceArray) {
+	  total += element;
+	}
+	
+	double avg = total / distanceArray.size();
+	return avg;
+  }
+  
   private float[] getLocation(Beacon beacon) {
 	int minorVal = beacon.getMinor();
 	  
 	// Get the position of the beacon.
 	float beaconX = preferences.getFloat("x" + minorVal, 0);
 	float beaconY = preferences.getFloat("y" + minorVal, 0);
-	 
-	// Get the sizes of the map
-	float mapXSize = preferences.getFloat("map_x", 10);
-	float mapYSize = preferences.getFloat("map_y", 10);
-	  
+
 	// Calculate the ratio of the beacon position with the map
 	float ratioX = beaconX / mapXSize;
 	float ratioY = beaconY / mapYSize;
@@ -203,6 +239,12 @@ public class MapPosActivity extends Activity {
 	float locationPixelsX = (ratioX * widthPixels);
 	float locationPixelsY = (ratioY * heightPixels);
 	
+	if (locationPixelsX == 0) {
+		locationPixelsX = 1;
+	}
+	if (locationPixelsY == 0) {
+		locationPixelsY = 1;
+	}
 	return new float[]{locationPixelsX, locationPixelsY}; 
   }
   
@@ -260,15 +302,17 @@ public class MapPosActivity extends Activity {
   public boolean onOptionsItemSelected(MenuItem item) {
 	if (item.getItemId() == android.R.id.home) {
 	  final Intent intent = new Intent(MapPosActivity.this, HomeActivity.class);
-	  MapPosActivity.this.finish();
-	  // A timer
-	  final Handler handler = new Handler();
-      handler.postDelayed(new Runnable() {
-        @Override
-        public void run() {
-          startActivity(intent);
-        }
-      }, 100);  
+		
+	  try {
+		beaconManager.stopRanging(ALL_ESTIMOTE_BEACONS_REGION);
+	  } catch (RemoteException e) {
+		Log.d(TAG, "Error while stopping ranging", e);
+	  }
+		
+	  editPref.putBoolean("intent_stop", false);
+	  editPref.commit();
+	  
+      startActivity(intent);
 	  return true;
 	}
     return super.onOptionsItemSelected(item);
@@ -303,15 +347,19 @@ public class MapPosActivity extends Activity {
   @Override
   protected void onStop() {
 	// Quit asking for results.
-    try {
-      beaconManager.stopRanging(ALL_ESTIMOTE_BEACONS_REGION);
-    } catch (RemoteException e) {
-      Log.d(TAG, "Error while stopping ranging", e);
-    }
-
+	Boolean intentStop = preferences.getBoolean("intent_stop", true);
+	if (intentStop) {
+	  try {
+	    beaconManager.stopRanging(ALL_ESTIMOTE_BEACONS_REGION);
+	  } catch (RemoteException e) {
+	    Log.d(TAG, "Error while stopping ranging", e);
+	  }
+	}
+	editPref.remove("intent_stop");
+	editPref.commit();
     super.onStop();
   }
-
+  
   @Override
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 	// Request Bluetooth.

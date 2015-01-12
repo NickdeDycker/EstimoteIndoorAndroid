@@ -20,7 +20,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -147,15 +146,17 @@ public class BeaconListActivity extends Activity {
   public boolean onOptionsItemSelected(MenuItem item) {
 	if (item.getItemId() == android.R.id.home) {
 	  final Intent intent = new Intent(BeaconListActivity.this, HomeActivity.class);
-	  BeaconListActivity.this.finish();
-	  // A timer
-	  final Handler handler = new Handler();
-	  handler.postDelayed(new Runnable() {
-	    @Override
-	    public void run() {
-	      startActivity(intent);
-	    }
-	  }, 100);  
+		
+	  try {
+		beaconManager.stopRanging(ALL_ESTIMOTE_BEACONS_REGION);
+	  } catch (RemoteException e) {
+		Log.d(TAG, "Error while stopping ranging", e);
+	  }
+		
+	  editPref.putBoolean("intent_stop", false);
+	  editPref.commit();
+	  
+	  startActivity(intent);
 	  return true;
 	}
     return super.onOptionsItemSelected(item);
@@ -190,12 +191,16 @@ public class BeaconListActivity extends Activity {
   @Override
   protected void onStop() {
 	// Quit asking for results.
-    try {
-      beaconManager.stopRanging(ALL_ESTIMOTE_BEACONS_REGION);
-    } catch (RemoteException e) {
-      Log.d(TAG, "Error while stopping ranging", e);
-    }
-
+	Boolean intentStop = preferences.getBoolean("intent_stop", true);
+	if (intentStop) {
+	  try {
+	    beaconManager.stopRanging(ALL_ESTIMOTE_BEACONS_REGION);
+	  } catch (RemoteException e) {
+	    Log.d(TAG, "Error while stopping ranging", e);
+	  }
+	}
+	editPref.remove("intent_stop");
+	editPref.commit();
     super.onStop();
   }
 

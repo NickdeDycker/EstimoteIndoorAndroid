@@ -13,6 +13,7 @@ import com.estimote.sdk.Utils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 
 
 public class BeaconListAdapter extends BaseAdapter {
@@ -20,8 +21,11 @@ public class BeaconListAdapter extends BaseAdapter {
   ArrayList<Beacon> beacons;
   private LayoutInflater inflater;
   private Context c; 
-  private ArrayList<Double> distances = new ArrayList<Double>();
   private SharedPreferences preferences;
+
+  ArrayList<Integer> minorValues = new ArrayList<Integer>();
+  HashMap<Integer, ArrayList<Double>> distances = new HashMap<Integer, ArrayList<Double>>();
+  
   
   public BeaconListAdapter(Context context) {
     this.inflater = LayoutInflater.from(context);
@@ -63,36 +67,40 @@ public class BeaconListAdapter extends BaseAdapter {
    * Calculate the average of multiple measurements of the distance to a beacon.
    */
   
-  private double average() {
+  private double average(int minor, double dist) {
 	// This way it only remembers the last 5 measured distances.
-	if (distances.size() > 5) {
-	  distances.remove(0);
+	if (!distances.containsKey(minor)) {
+	  distances.put(minor, new ArrayList<Double>());
+	}
+	
+	ArrayList<Double> distanceArray = distances.get(minor);
+	distanceArray.add(dist);
+	if (distanceArray.size() > 20) {
+	  distanceArray.remove(0);
 	}
 	
 	double total = 0;
-	for (double element : distances) {
+	for (double element : distanceArray) {
 	  total += element;
 	}
 	
-	double avg = total / distances.size();
+	double avg = total / distanceArray.size();
 	return avg;
   }
   
   private void bind(Beacon beacon, View view) {
     ViewHolder holder = (ViewHolder) view.getTag();
     
+    int minor = beacon.getMinor();
     Double dist = Utils.computeAccuracy(beacon);
     // In case of invalid measurements.
-    if (dist != null) {
-      distances.add(dist);
-    }
-    
-    double avg_dist = average();
-    int minor = beacon.getMinor();
+
+    double avg_dist = average(minor, dist);
+
     holder.uuidTextView.setText("UUID: " + beacon.getProximityUUID());
     holder.majorminorTextView.setText("Major (Minor): \t \t" + beacon.getMajor() + " (" + minor + ")");
     holder.distanceTextView.setText("Distance: \t \t \t \t \t \t" + avg_dist);
-    holder.posTextView.setText("Position(x, y): \t \t" + "(" + preferences.getFloat("x"+minor, 0) + ", " + preferences.getFloat("y"+minor, 0) + ")");
+    holder.posTextView.setText("Position(x, y): \t \t" + "(" + preferences.getFloat("x"+minor, -1) + ", " + preferences.getFloat("y"+minor, 0) + ")");
 
   }
 

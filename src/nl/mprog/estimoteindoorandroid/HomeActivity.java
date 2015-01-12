@@ -16,9 +16,10 @@ package nl.mprog.estimoteindoorandroid;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.RemoteException;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -34,7 +35,7 @@ import java.util.List;
 import java.util.HashMap;
 
 public class HomeActivity extends Activity {
-
+  int N = 0;
   // Bluetooth and beacon constants.
   private static final String TAG = HomeActivity.class.getSimpleName();
 
@@ -52,11 +53,18 @@ public class HomeActivity extends Activity {
 
   TextView results;
   
+  SharedPreferences preferences;
+  SharedPreferences.Editor editPref;
+
+  
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.home_screen);
 
+    preferences = PreferenceManager.getDefaultSharedPreferences(this);
+    editPref = preferences.edit();
+    
     results = (TextView) findViewById(R.id.show_result);
     
     beaconlistButton = (Button) findViewById(R.id.beacon_list);
@@ -66,15 +74,17 @@ public class HomeActivity extends Activity {
 	  @Override
 	  public void onClick(View v) {
 		final Intent intent = new Intent(HomeActivity.this, BeaconListActivity.class);
-	    HomeActivity.this.finish();
-	    // A timer
-	    final Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-          @Override
-          public void run() {
-            startActivity(intent);
-          }
-        }, 100);  
+		
+		try {
+		  beaconManager.stopRanging(ALL_ESTIMOTE_BEACONS_REGION);
+		} catch (RemoteException e) {
+		  Log.d(TAG, "Error while stopping ranging", e);
+		}
+		
+		editPref.putBoolean("intent_stop", false);
+		editPref.commit();
+
+		startActivity(intent);
 	  }
     });
 
@@ -85,15 +95,17 @@ public class HomeActivity extends Activity {
 	  @Override
 	  public void onClick(View v) {
 	    final Intent intent = new Intent(HomeActivity.this, MapPosActivity.class);
-	    HomeActivity.this.finish();
-	    // A timer
-	    final Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-          @Override
-          public void run() {
-            startActivity(intent);
-          }
-        }, 100);  
+		
+		try {
+		  beaconManager.stopRanging(ALL_ESTIMOTE_BEACONS_REGION);
+		} catch (RemoteException e) {
+		  Log.d(TAG, "Error while stopping ranging", e);
+		}
+		
+		editPref.putBoolean("intent_stop", false);
+		editPref.commit();
+		
+        startActivity(intent);
 	  }
     });
     
@@ -116,7 +128,8 @@ public class HomeActivity extends Activity {
 	      }
 	      double avg = total / dist.size();
 	      results.append("Minor: \t" + minorVal + "\t\t" + "  dist: \t" + avg + "\n");
-	    }
+	      
+	    };
 	  }
     });
     
@@ -136,11 +149,14 @@ public class HomeActivity extends Activity {
             // distance between device and beacon.
             beaconlistButton.setText("List of beacons (Found: " + beacons.size() + ")");
             
+            Log.d("beacon", "check  " + N);
+            N = N + 1;
+            
             for (int i = 0; i < beacons.size(); i++) {
               Beacon currentBeacon = beacons.get(i);
               Double distance = Utils.computeAccuracy(currentBeacon);
               int minor = currentBeacon.getMinor();
-            	
+              
               // Check if the beacon is just found.
               if (!minorValues.contains(minor)) {
             	minorValues.add(minor);
@@ -154,7 +170,7 @@ public class HomeActivity extends Activity {
               // Add the distance to the ArrayList and maintain a certain size.
               ArrayList<Double> distanceToBeacon = distances.get(minor);
               distanceToBeacon.add(distance);
-              if (distanceToBeacon.size() > 5) {
+              if (distanceToBeacon.size() > 20) {
             	distanceToBeacon.remove(0);
               }
               distances.put(minor, distanceToBeacon);
@@ -194,12 +210,16 @@ public class HomeActivity extends Activity {
   @Override
   protected void onStop() {
 	// Quit asking for results.
-    try {
-      beaconManager.stopRanging(ALL_ESTIMOTE_BEACONS_REGION);
-    } catch (RemoteException e) {
-      Log.d(TAG, "Error while stopping ranging", e);
-    }
-
+	Boolean intentStop = preferences.getBoolean("intent_stop", true);
+	if (intentStop) {
+	  try {
+	    beaconManager.stopRanging(ALL_ESTIMOTE_BEACONS_REGION);
+	  } catch (RemoteException e) {
+	    Log.d(TAG, "Error while stopping ranging", e);
+	  }
+	}
+	editPref.remove("intent_stop");
+	editPref.commit();
     super.onStop();
   }
   
