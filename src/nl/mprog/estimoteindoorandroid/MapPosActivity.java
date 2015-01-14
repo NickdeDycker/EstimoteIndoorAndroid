@@ -1,5 +1,6 @@
 package nl.mprog.estimoteindoorandroid;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -35,6 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+@SuppressLint({ "InflateParams", "UseSparseArrays" }) 
 public class MapPosActivity extends Activity {
 	
   private SharedPreferences preferences;
@@ -50,13 +52,17 @@ public class MapPosActivity extends Activity {
 
   private BeaconManager beaconManager;
 
+  // Image of the map, used to draw the Canvas.
   private Bitmap workingBitmap;
   
-  float mapXSize;
-  float mapYSize;
+  // Size of the map/picture in meters.
+  private float mapXSize;
+  private float mapYSize;
   
+  // Size of the map/picture in pixels.
   private int widthPixels;
   private int heightPixels;
+  
   private ImageView mapImage;
   
   final ArrayList<Integer> minorValues = new ArrayList<Integer>();
@@ -71,7 +77,7 @@ public class MapPosActivity extends Activity {
     preferences = PreferenceManager.getDefaultSharedPreferences(this);
     editPref = preferences.edit();
 
-    // Retrieve the size of the map/raster/picture.
+    // Retrieve the size of the map in meters.
     mapXSize = preferences.getFloat("map_x", 10);
     mapYSize = preferences.getFloat("map_y", 10);
     
@@ -83,7 +89,7 @@ public class MapPosActivity extends Activity {
     mapImage.setAdjustViewBounds(true);
     
     // Set a scaled version of the map to the ImageView. 
-    // DOESNT WORK PERFECT WITH LONGER PICTURES/BIGGER HEIGHT.
+    // NOTE TO SELF: DOESNT WORK PERFECT WITH LONGER PICTURES/BIGGER HEIGHT.
     final Bitmap imageRaw = BitmapFactory.decodeResource(getResources(), R.drawable.raster);
     getScreenSizes(imageRaw);
     Bitmap imageScaled = Bitmap.createScaledBitmap(imageRaw, widthPixels, heightPixels, true);
@@ -165,13 +171,15 @@ public class MapPosActivity extends Activity {
             // distance between device and beacon.
             getActionBar().setSubtitle("Found beacons(x): " + beaconsList.size());
             
+            // Copy the workingBitmap for a clean sheet for the Canvas.
             final Bitmap mutableBitmap = workingBitmap.copy(Bitmap.Config.ARGB_8888, true);
             Canvas canvas = new Canvas(mutableBitmap);
             
 	        for (int i = 0; i < beaconsList.size(); i++) {
 	          Beacon currentBeacon = beaconsList.get(i);
 	          int minorVal = currentBeacon.getMinor();
-
+	          
+	          // To prevent new beacons from showing up.
 	          if (preferences.getFloat("x" + minorVal, -1) < 0) {
 	        	  continue;
 	          }
@@ -192,14 +200,14 @@ public class MapPosActivity extends Activity {
               
               // Predefined variables for creating a picture with drawn circles on it.
               float[] locationBeacon = getLocation(currentBeacon);
-
+              
+              // Draw a circle with the distance to the user as radius.
               double distanceAverage = average(distances.get(minorVal));
   	          canvas.drawCircle(locationBeacon[0], locationBeacon[1], (float) (distanceAverage/mapXSize) * widthPixels, paintBlue);
   	          
   	          mapInfo.setText("distance: " + distanceAverage);                  
 	        }
             
-            // Method about measuring position of user if 3 beacons are near
 	        mapImage.setImageBitmap(mutableBitmap);
           }
         });

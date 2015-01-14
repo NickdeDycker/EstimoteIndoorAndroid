@@ -1,18 +1,6 @@
 package nl.mprog.estimoteindoorandroid;
 
-/* on Destroy - disconnect BeaconManager
- * onStart - Check if bluetooth enabled, else ask the user to enable it. Connect to service. 
- * onStop - Stop ranging
- * 
- * 
- */
-
-/* onDestroy - check
- * onStop - Check (catch exception)
- * onStart - Check (Bluetooth, start ranging)
- * 
- */
-
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
@@ -34,8 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
 
+@SuppressLint("UseSparseArrays") 
 public class HomeActivity extends Activity {
-  int N = 0;
+
   // Bluetooth and beacon constants.
   private static final String TAG = HomeActivity.class.getSimpleName();
 
@@ -46,16 +35,16 @@ public class HomeActivity extends Activity {
 
   private Button beaconlistButton;
   
-  ArrayList<Integer> minorValues = new ArrayList<Integer>();
-  HashMap<Integer, ArrayList<Double>> distances = new HashMap<Integer, ArrayList<Double>>();
+  private ArrayList<Integer> minorValues = new ArrayList<Integer>();
+  private HashMap<Integer, ArrayList<Double>> distances = new HashMap<Integer, ArrayList<Double>>();
   
   private BeaconManager beaconManager;
 
-  TextView results;
+  // TextView to show all the distances of the beacons.
+  private TextView results;
   
-  SharedPreferences preferences;
-  SharedPreferences.Editor editPref;
-
+  private SharedPreferences preferences;
+  private SharedPreferences.Editor editPref;
   
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -69,22 +58,24 @@ public class HomeActivity extends Activity {
     
     beaconlistButton = (Button) findViewById(R.id.beacon_list);
     
-    // A button to BeaconListActivity, to get a list of beacons.
+    // A button to BeaconListActivity, to get a list of all beacons.
     beaconlistButton.setOnClickListener(new View.OnClickListener() {
 	  @Override
 	  public void onClick(View v) {
-		final Intent intent = new Intent(HomeActivity.this, BeaconListActivity.class);
+		final Intent beaconListIntent = new Intent(HomeActivity.this, BeaconListActivity.class);
 		
+		// Stop ranging/searching for beacons.
 		try {
 		  beaconManager.stopRanging(ALL_ESTIMOTE_BEACONS_REGION);
 		} catch (RemoteException e) {
 		  Log.d(TAG, "Error while stopping ranging", e);
 		}
 		
+		// A variable to trigger onStop or not.
 		editPref.putBoolean("intent_stop", false);
 		editPref.commit();
 
-		startActivity(intent);
+		startActivity(beaconListIntent);
 	  }
     });
 
@@ -94,18 +85,20 @@ public class HomeActivity extends Activity {
     mapPosButton.setOnClickListener(new View.OnClickListener() {
 	  @Override
 	  public void onClick(View v) {
-	    final Intent intent = new Intent(HomeActivity.this, MapPosActivity.class);
+	    final Intent mapPosIntent = new Intent(HomeActivity.this, MapPosActivity.class);
 		
+	    // Stop ranging/searching for beacons.
 		try {
 		  beaconManager.stopRanging(ALL_ESTIMOTE_BEACONS_REGION);
 		} catch (RemoteException e) {
 		  Log.d(TAG, "Error while stopping ranging", e);
 		}
 		
+		// A variable to trigger onStop or not.
 		editPref.putBoolean("intent_stop", false);
 		editPref.commit();
 		
-        startActivity(intent);
+        startActivity(mapPosIntent);
 	  }
     });
     
@@ -149,30 +142,26 @@ public class HomeActivity extends Activity {
             // distance between device and beacon.
             beaconlistButton.setText("List of beacons (Found: " + beacons.size() + ")");
             
-            Log.d("beacon", "check  " + N);
-            N = N + 1;
-            
+            // Add distances to the ArrayLists.
             for (int i = 0; i < beacons.size(); i++) {
               Beacon currentBeacon = beacons.get(i);
               Double distance = Utils.computeAccuracy(currentBeacon);
               int minor = currentBeacon.getMinor();
               
               // Check if the beacon is just found.
-              if (!minorValues.contains(minor)) {
-            	minorValues.add(minor);
-              }
-            	
-              // Check whether there's a HashMap key for this beacon.
               if (!distances.containsKey(minor)) {
+            	minorValues.add(minor);
             	distances.put(minor, new ArrayList<Double>());
               }
             	
               // Add the distance to the ArrayList and maintain a certain size.
               ArrayList<Double> distanceToBeacon = distances.get(minor);
               distanceToBeacon.add(distance);
+              
               if (distanceToBeacon.size() > 20) {
             	distanceToBeacon.remove(0);
               }
+              
               distances.put(minor, distanceToBeacon);
             }
           }

@@ -1,18 +1,6 @@
 package nl.mprog.estimoteindoorandroid;
 
-/* on Destroy - disconnect BeaconManager
- * onStart - Check if bluetooth enabled, else ask the user to enable it. Connect to service. 
- * onStop - Stop ranging
- * 
- * 
- */
-
-/* onDestroy - check
- * onStop - Check (catch exception)
- * onStart - Check (Bluetooth, start ranging)
- * 
- */
-
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -39,10 +27,8 @@ import com.estimote.sdk.utils.L;
 import java.util.Collections;
 import java.util.List;
 
-public class BeaconListActivity extends Activity {
-	
-  private SharedPreferences preferences;
-  private SharedPreferences.Editor editPref;	
+@SuppressLint("InflateParams") 
+public class BeaconListActivity extends Activity {	
   
   // Bluetooth and Beacon constants.
   private static final String TAG = BeaconListActivity.class.getSimpleName();
@@ -55,6 +41,9 @@ public class BeaconListActivity extends Activity {
   private BeaconManager beaconManager;
   private BeaconListAdapter listViewAdapter;
 
+  private SharedPreferences preferences;
+  private SharedPreferences.Editor editPref;
+  
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -70,6 +59,7 @@ public class BeaconListActivity extends Activity {
     list.setAdapter(listViewAdapter);
     list.setClickable(true);
 
+    // Set a dialogAlerter to change values of a beacon.
     list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
       public void onItemClick(AdapterView<?> parentView, View childView, int position, long id) {
 			
@@ -127,6 +117,8 @@ public class BeaconListActivity extends Activity {
             // Note that beacons reported here are already sorted by estimated
             // distance between device and beacon.
             getActionBar().setSubtitle("Found beacons: " + beaconsList.size());
+            
+            // Refresh the listViewAdapter with new beacons.
             listViewAdapter.replaceWith(beaconsList);
           }
         });
@@ -144,15 +136,19 @@ public class BeaconListActivity extends Activity {
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
+	  
+	// Set the return button.
 	if (item.getItemId() == android.R.id.home) {
 	  final Intent intent = new Intent(BeaconListActivity.this, HomeActivity.class);
 		
+	  // Stop ranging/searching for beacons.
 	  try {
 		beaconManager.stopRanging(ALL_ESTIMOTE_BEACONS_REGION);
 	  } catch (RemoteException e) {
 		Log.d(TAG, "Error while stopping ranging", e);
 	  }
 		
+	  // A variable to trigger onStop or not.
 	  editPref.putBoolean("intent_stop", false);
 	  editPref.commit();
 	  

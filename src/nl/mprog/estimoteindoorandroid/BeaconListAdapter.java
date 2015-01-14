@@ -1,5 +1,6 @@
 package nl.mprog.estimoteindoorandroid;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -15,12 +16,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
-
+@SuppressLint("UseSparseArrays") 
 public class BeaconListAdapter extends BaseAdapter {
 
   ArrayList<Beacon> beacons;
   private LayoutInflater inflater;
-  private Context c; 
   private SharedPreferences preferences;
 
   ArrayList<Integer> minorValues = new ArrayList<Integer>();
@@ -31,7 +31,6 @@ public class BeaconListAdapter extends BaseAdapter {
     this.inflater = LayoutInflater.from(context);
     this.beacons = new ArrayList<Beacon>();
     preferences = PreferenceManager.getDefaultSharedPreferences(context);
-    c = context;
   }
 
   public void replaceWith(Collection<Beacon> newBeacons) {
@@ -64,21 +63,24 @@ public class BeaconListAdapter extends BaseAdapter {
   }
   
   /*
-   * Calculate the average of multiple measurements of the distance to a beacon.
+   * Adds a distance and calculates the average of multiple measurements of the distance to a beacon.
    */
   
   private double average(int minor, double dist) {
-	// This way it only remembers the last 5 measured distances.
+
 	if (!distances.containsKey(minor)) {
 	  distances.put(minor, new ArrayList<Double>());
 	}
 	
 	ArrayList<Double> distanceArray = distances.get(minor);
 	distanceArray.add(dist);
+	
+	// This way it only remembers the last 5 measured distances.
 	if (distanceArray.size() > 20) {
 	  distanceArray.remove(0);
 	}
 	
+	// Sum up all the elements in the Array and divide by its size to get the average.
 	double total = 0;
 	for (double element : distanceArray) {
 	  total += element;
@@ -93,7 +95,6 @@ public class BeaconListAdapter extends BaseAdapter {
     
     int minor = beacon.getMinor();
     Double dist = Utils.computeAccuracy(beacon);
-    // In case of invalid measurements.
 
     double avg_dist = average(minor, dist);
 
@@ -104,6 +105,7 @@ public class BeaconListAdapter extends BaseAdapter {
 
   }
 
+  @SuppressLint("InflateParams") 
   private View inflateIfRequired(View view, int position, ViewGroup parent) {
     if (view == null) {
       view = inflater.inflate(R.layout.device_item, null);
