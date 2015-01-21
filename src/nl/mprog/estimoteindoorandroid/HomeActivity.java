@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Parcel;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -123,6 +124,7 @@ public class HomeActivity extends Activity {
 	      results.append("Minor: \t" + minorVal + "\t\t" + "  dist: \t" + avg + "\n");
 	      
 	    };
+	    //results.append("\n" + distances.get(33028));
 	  }
     });
     
@@ -131,6 +133,7 @@ public class HomeActivity extends Activity {
 
     // Configure BeaconManager.
     beaconManager = new BeaconManager(this);
+    beaconManager.setForegroundScanPeriod(100, 0);
     beaconManager.setRangingListener(new BeaconManager.RangingListener() {
       @Override
       public void onBeaconsDiscovered(Region region, final List<Beacon> beacons) {
@@ -141,13 +144,17 @@ public class HomeActivity extends Activity {
             // Note that beacons reported here are already sorted by estimated
             // distance between device and beacon.
             beaconlistButton.setText("List of beacons (Found: " + beacons.size() + ")");
-            
+            results.setText("");
             // Add distances to the ArrayLists.
             for (int i = 0; i < beacons.size(); i++) {
               Beacon currentBeacon = beacons.get(i);
               Double distance = Utils.computeAccuracy(currentBeacon);
               int minor = currentBeacon.getMinor();
-              
+              if (minor == 33028) {
+	              Parcel p1 = Parcel.obtain();
+	              p1.writeString("This is a parcel");
+	              currentBeacon.writeToParcel(p1 , 1);
+              }
               // Check if the beacon is just found.
               if (!distances.containsKey(minor)) {
             	minorValues.add(minor);
@@ -158,10 +165,11 @@ public class HomeActivity extends Activity {
               ArrayList<Double> distanceToBeacon = distances.get(minor);
               distanceToBeacon.add(distance);
               
-              if (distanceToBeacon.size() > 20) {
+              if (distanceToBeacon.size() > 30) {
             	distanceToBeacon.remove(0);
               }
-              
+              results.append(currentBeacon.describeContents() + " : " + currentBeacon.getName() + " : " + currentBeacon.hashCode() +"\n");
+              results.append(currentBeacon.CONTENTS_FILE_DESCRIPTOR + " : " + currentBeacon.CREATOR + "\n\n" );
               distances.put(minor, distanceToBeacon);
             }
           }

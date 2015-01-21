@@ -32,7 +32,9 @@ import com.estimote.sdk.Region;
 import com.estimote.sdk.Utils;
 import com.estimote.sdk.utils.L;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -65,8 +67,12 @@ public class MapPosActivity extends Activity {
   
   private ImageView mapImage;
   
+  float[] userPos;
+  int measurements = 0; 
+  
   final ArrayList<Integer> minorValues = new ArrayList<Integer>();
   final HashMap<Integer, ArrayList<Double>> distances = new HashMap<Integer, ArrayList<Double>>();
+  final HashMap<Integer, Double> distanceAvg = new HashMap<Integer, Double>();
   
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +86,8 @@ public class MapPosActivity extends Activity {
     // Retrieve the size of the map in meters.
     mapXSize = preferences.getFloat("map_x", 10);
     mapYSize = preferences.getFloat("map_y", 10);
+    
+    Log.d("TAG", "test");
     
     // Display the map size above the map.
     final TextView mapInfo = (TextView) findViewById(R.id.map_size);
@@ -170,7 +178,7 @@ public class MapPosActivity extends Activity {
             // Note that beacons reported here are already sorted by estimated
             // distance between device and beacon.
             getActionBar().setSubtitle("Found beacons(x): " + beaconsList.size());
-            
+
             // Copy the workingBitmap for a clean sheet for the Canvas.
             final Bitmap mutableBitmap = workingBitmap.copy(Bitmap.Config.ARGB_8888, true);
             Canvas canvas = new Canvas(mutableBitmap);
@@ -189,41 +197,141 @@ public class MapPosActivity extends Activity {
             	minorValues.add(minorVal);
             	distances.put(minorVal, new ArrayList<Double>());
               }
-            	
-              // Add the distance to the ArrayList and maintain a certain size.
-	          double distance = Utils.computeAccuracy(currentBeacon);
-              ArrayList<Double> distanceToBeacon = distances.get(minorVal);
-              distanceToBeacon.add(distance);
-              if (distanceToBeacon.size() > 20) {
-            	distanceToBeacon.remove(0);
+              addDistance(currentBeacon, minorVal);
+
+              if (preferences.getFloat("x" + minorVal, 0) > -0.1) {
+	              // Predefined variables for creating a picture with drawn circles on it.
+	              float[] locationBeacon = getLocation(currentBeacon);
+	              Double currentAverage = distanceAvg.get(minorVal);
+	              // Draw a circle with the distance to the user as radius.
+	  	          canvas.drawCircle(locationBeacon[0], locationBeacon[1], (float) (currentAverage/mapXSize) * widthPixels, paintBlue);     
               }
-              
-              // Predefined variables for creating a picture with drawn circles on it.
-              float[] locationBeacon = getLocation(currentBeacon);
-              
-              // Draw a circle with the distance to the user as radius.
-              double distanceAverage = average(distances.get(minorVal));
-  	          canvas.drawCircle(locationBeacon[0], locationBeacon[1], (float) (distanceAverage/mapXSize) * widthPixels, paintBlue);
-  	          
-  	          mapInfo.setText("distance: " + distanceAverage);                  
 	        }
-            
+	        int temp = measurements;
+	        while (temp > 9) {
+	        	temp -= 10;
+	        }
+
+	        if (measurements > 19) {
+	        	if (temp == 0) {
+	        	}
+	        	userPos = userLocation(beaconsList);
+	        	canvas.drawCircle(widthPixels *(userPos[0]/mapXSize), heightPixels * (userPos[1]/mapYSize), 
+	        			(float) (userPos[2]/mapXSize) * widthPixels, paintRed);
+	        }
+            measurements += 1;     
 	        mapImage.setImageBitmap(mutableBitmap);
           }
         });
       }
     });
   }
+ 
+  
+  private float[] userLocation(List<Beacon> beaconsList) {
+	  float x_user = 0;
+	  float y_user = 0;
+	  float r_user = 1;
+	  
+	  ArrayList<float[]> circleArray = new ArrayList<float[]>();
+	  for (int i = 0; i < beaconsList.size(); i++) {
+		  int minorVal = beaconsList.get(i).getMinor();
+		  float r;
+		  try {
+			  r = distanceAvg.get(minorVal).floatValue();
+		  } catch (NullPointerException e) {
+			  continue;
+		  }
+		  float x = preferences.getFloat("x" + minorVal, 0);
+		  float y = preferences.getFloat("y" + minorVal, 0);
+		  if (x >= 0 && y >= 0) {
+			  circleArray.add(new float[]{x, y, r});
+			  x_user += x;
+			  y_user += y;
+					  
+		  } 
+	  }
+	  
+	  float circleNumber = circleArray.size();
+	  if (circleNumber < 2) {
+		  return new float[]{x_user, y_user, r_user};
+	  }
+	  x_user = x_user / circleNumber;
+	  y_user /= circleNumber;
 
-  private double average(ArrayList<Double> distanceArray) {
-	double total = 0;
-	for (double element : distanceArray) {
-	  total += element;
-	}
-	
-	double avg = total / distanceArray.size();
-	return avg;
+	  float prev2Error = 0;
+	  float prev1Error = 0;
+	  float currentError = 1000000;
+	  float x_1 = 0;
+	  float y_1 = 0;
+	  float y_2 = 0;
+	  float x_2 = 0;
+	  int iterations = 0;
+	  while (prev2Error != currentError) {
+		  iterations += 1;
+		  prev2Error = prev1Error;
+		  prev1Error = currentError;
+		  
+		  x_2 = x_1;
+		  x_1 = x_user;
+		  y_2 = y_1;
+		  y_1 = y_user;
+		  
+		  ArrayList<float[]> newPositions = new ArrayList();
+		  newPositions.add(new float[]{(float) (x_user + 0.1), y_user});
+		  newPositions.add(new float[]{(float) (x_user - 0.1), y_user});
+		  newPositions.add(new float[]{x_user, (float) (y_user + 0.1)});
+		  newPositions.add(new float[]{x_user, (float) (y_user - 0.1)});
+		  
+		  float error = 0;
+		
+		  for (float[] direction : newPositions) {
+
+			  error = 0;
+			  ArrayList<Float> dist = new ArrayList<Float>();
+
+			  for (int i = 0; i < circleNumber; i++) {
+				  float[] circlePos = circleArray.get(i);
+				  dist.add((float) (Math.sqrt(Math.pow(circlePos[0] - direction[0], 2) + 
+						  Math.pow(circlePos[1] - direction[1], 2)) - circlePos[2]));
+				  error += Math.pow(dist.get(dist.size() - 1), 2);
+			  }
+			  error = (float) Math.sqrt(error);
+			  if (error < currentError) {
+				  Collections.sort(dist);
+				  r_user = dist.get(dist.size() - 1);
+				  x_user = direction[0];
+				  y_user = direction[1];
+			  }
+		  }
+		  currentError = error;
+			  
+		  }
+	  return new float[]{x_user, y_user, r_user};
+	  
   }
+  
+  
+  private void addDistance(Beacon beacon, int minorVal) {
+    // Add the distance to the ArrayList and maintain a certain size.
+    double distance = Utils.computeAccuracy(beacon);
+    ArrayList<Double> distanceToBeacon = distances.get(minorVal);
+    distanceToBeacon.add(distance);
+    if (distanceToBeacon.size() > 40) {
+      distanceToBeacon.remove(0);
+    }
+    average(distanceToBeacon, minorVal);
+  }  
+  
+  private void average(ArrayList<Double> distanceToBeacon, int minorVal) {
+	double total = 0;
+		  
+	for (double element : distanceToBeacon) {
+		total += element;
+	}
+	distanceAvg.put(minorVal, total / distanceToBeacon.size());
+  }
+  
   
   private float[] getLocation(Beacon beacon) {
 	int minorVal = beacon.getMinor();

@@ -102,6 +102,7 @@ public class BeaconListAdapter extends BaseAdapter {
     holder.majorminorTextView.setText("Major (Minor): \t \t" + beacon.getMajor() + " (" + minor + ")");
     holder.distanceTextView.setText("Distance: \t \t \t \t \t \t" + avg_dist);
     holder.posTextView.setText("Position(x, y): \t \t" + "(" + preferences.getFloat("x"+minor, -1) + ", " + preferences.getFloat("y"+minor, 0) + ")");
+    holder.rssiTextView.setText("RSSI: " + beacon.getRssi() + " : " + beacon.getMeasuredPower());
 
   }
 
@@ -119,12 +120,14 @@ public class BeaconListAdapter extends BaseAdapter {
     final TextView majorminorTextView;
     final TextView distanceTextView;
     final TextView posTextView;
+    final TextView rssiTextView;
 
     ViewHolder(View view) {
       uuidTextView = (TextView) view.findViewWithTag("uuid");
       majorminorTextView = (TextView) view.findViewWithTag("majorminor");
       distanceTextView = (TextView) view.findViewWithTag("distance");
       posTextView = (TextView) view.findViewWithTag("position");
+      rssiTextView = (TextView) view.findViewWithTag("rssi");
     }
   }
 }
