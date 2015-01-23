@@ -5,7 +5,7 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent">
               
-  <TextView android:text="Estimote Indoor Location\nfor Android"
+  <TextView android:text="@string/formal_app_name"
       	  	android:layout_width="match_parent"
       	  	android:layout_height="wrap_content"   
       	  	android:gravity="center" 
@@ -14,19 +14,21 @@
   <Button android:id="@+id/beacon_list"
       	  android:layout_width="match_parent"
       	  android:layout_height="wrap_content"
-      	  android:text="List of beacons"
+      	  android:textColor="@android:color/white"
       	  android:background="@layout/custom_button"/>
 
   <Button android:id="@+id/map_position"
       	  android:layout_width="match_parent"
       	  android:layout_height="wrap_content"
-      	  android:text="Map with position"
+      	  android:text="@string/map_button"
+      	  android:textColor="@android:color/white"
       	  android:background="@layout/custom_button"/>
   
   <Button android:id="@+id/single_measure"
       	  android:layout_width="match_parent"
       	  android:layout_height="wrap_content"
-      	  android:text="Single Measurement"
+      	  android:text="@string/measure_button"
+      	  android:textColor="@android:color/white"
       	  android:background="@layout/custom_button"/>
 
   <TextView android:id="@+id/show_result"

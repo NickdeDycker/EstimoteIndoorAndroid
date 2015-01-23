@@ -30,6 +30,7 @@ import com.estimote.sdk.Beacon;
 import com.estimote.sdk.BeaconManager;
 import com.estimote.sdk.Region;
 import com.estimote.sdk.Utils;
+import com.estimote.sdk.connection.BeaconConnection;
 import com.estimote.sdk.utils.L;
 
 import java.lang.reflect.Array;
@@ -64,15 +65,15 @@ public class MapPosActivity extends Activity {
   // Size of the map/picture in pixels.
   private int widthPixels;
   private int heightPixels;
-  
+  private Boolean reset = false;
   private ImageView mapImage;
   
-  float[] userPos;
+  float[] userPos = new float[]{0, 0, 0};
   int measurements = 0; 
   
   final ArrayList<Integer> minorValues = new ArrayList<Integer>();
-  final HashMap<Integer, ArrayList<Double>> distances = new HashMap<Integer, ArrayList<Double>>();
-  final HashMap<Integer, Double> distanceAvg = new HashMap<Integer, Double>();
+  HashMap<Integer, ArrayList<Double>> distances = new HashMap<Integer, ArrayList<Double>>();
+  HashMap<Integer, Double> distanceAvg = new HashMap<Integer, Double>();
   
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -104,6 +105,14 @@ public class MapPosActivity extends Activity {
     mapImage.setImageBitmap(imageScaled);
     
     workingBitmap = Bitmap.createScaledBitmap(imageRaw, widthPixels, heightPixels, true);
+    
+    final Button resetButton = (Button) findViewById(R.id.reset_pos);
+    resetButton.setOnClickListener(new View.OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			reset = true;			
+		}
+	});
     
     // Button to get a dialog to change the map sizes.
     final Button changeMapSettings = (Button) findViewById(R.id.map_settings);
@@ -178,7 +187,17 @@ public class MapPosActivity extends Activity {
             // Note that beacons reported here are already sorted by estimated
             // distance between device and beacon.
             getActionBar().setSubtitle("Found beacons(x): " + beaconsList.size());
-
+            mapInfo.setText("The map size (x, y): \t" + mapXSize + ", " + mapYSize + "\n");
+            
+            if (reset) {
+    			measurements = 0;
+    			distances = new HashMap<Integer, ArrayList<Double>>();
+    			distanceAvg = new HashMap<Integer, Double>();
+    			reset = false;
+            }
+            
+            
+            
             // Copy the workingBitmap for a clean sheet for the Canvas.
             final Bitmap mutableBitmap = workingBitmap.copy(Bitmap.Config.ARGB_8888, true);
             Canvas canvas = new Canvas(mutableBitmap);
@@ -195,6 +214,8 @@ public class MapPosActivity extends Activity {
               // Check if the beacon is just found.
               if (!minorValues.contains(minorVal)) {
             	minorValues.add(minorVal);
+              }
+              if (!distances.containsKey(minorVal)) {
             	distances.put(minorVal, new ArrayList<Double>());
               }
               addDistance(currentBeacon, minorVal);
@@ -204,15 +225,20 @@ public class MapPosActivity extends Activity {
 	              float[] locationBeacon = getLocation(currentBeacon);
 	              Double currentAverage = distanceAvg.get(minorVal);
 	              // Draw a circle with the distance to the user as radius.
-	  	          canvas.drawCircle(locationBeacon[0], locationBeacon[1], (float) (currentAverage/mapXSize) * widthPixels, paintBlue);     
+	  	          //canvas.drawCircle(locationBeacon[0], locationBeacon[1], (float) (currentAverage/mapXSize) * widthPixels, paintBlue);  
+	  	          canvas.drawCircle(locationBeacon[0], locationBeacon[1], (float) 0.1 * widthPixels, paintBlue);  
               }
 	        }
+	        
 	        int temp = measurements;
-	        while (temp > 9) {
-	        	temp -= 10;
+	        while (temp > 19) {
+	        	temp -= 20;
 	        }
 
-	        if (measurements > 19) {
+	        if (measurements > 39) {
+	        	
+	        	mapInfo.append("User Position (x, y): " + userPos[0] + ", " + userPos[1] + "\n" + "Maximum error: " + userPos[2] + "\n");
+	        	
 	        	if (temp == 0) {
 	        	}
 	        	userPos = userLocation(beaconsList);
@@ -226,7 +252,6 @@ public class MapPosActivity extends Activity {
       }
     });
   }
- 
   
   private float[] userLocation(List<Beacon> beaconsList) {
 	  float x_user = 0;
@@ -317,11 +342,21 @@ public class MapPosActivity extends Activity {
     double distance = Utils.computeAccuracy(beacon);
     ArrayList<Double> distanceToBeacon = distances.get(minorVal);
     distanceToBeacon.add(distance);
-    if (distanceToBeacon.size() > 40) {
+    if (distanceToBeacon.size() > 100) {
       distanceToBeacon.remove(0);
     }
-    average(distanceToBeacon, minorVal);
+    median(distanceToBeacon, minorVal);
   }  
+  
+  private void median(ArrayList<Double> distanceToBeacon, int minorVal) {
+	  Collections.sort(distanceToBeacon);
+	  int half = (int) (0.5 * distanceToBeacon.size());
+	  if (distanceToBeacon.size() == 1) {
+		  half = 0;
+	  }
+	  distanceAvg.put(minorVal, distanceToBeacon.get(half));
+  }
+  
   
   private void average(ArrayList<Double> distanceToBeacon, int minorVal) {
 	double total = 0;

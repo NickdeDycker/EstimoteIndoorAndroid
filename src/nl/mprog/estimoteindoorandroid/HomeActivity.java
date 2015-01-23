@@ -165,11 +165,9 @@ public class HomeActivity extends Activity {
               ArrayList<Double> distanceToBeacon = distances.get(minor);
               distanceToBeacon.add(distance);
               
-              if (distanceToBeacon.size() > 30) {
+              if (distanceToBeacon.size() > 100) {
             	distanceToBeacon.remove(0);
               }
-              results.append(currentBeacon.describeContents() + " : " + currentBeacon.getName() + " : " + currentBeacon.hashCode() +"\n");
-              results.append(currentBeacon.CONTENTS_FILE_DESCRIPTOR + " : " + currentBeacon.CREATOR + "\n\n" );
               distances.put(minor, distanceToBeacon);
             }
           }

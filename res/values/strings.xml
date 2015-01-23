@@ -2,7 +2,14 @@
 <resources>
 
     <string name="app_name">EstimoteIndoorAndroid</string>
-    <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="formal_app_name">Estimote Indoor Location\nfor Android</string>
+    <string name="map_button">Map with position</string>
+    <string name="measure_button">Single measurement</string>
+    <string name="x_value">Enter the x value: </string>
+    <string name="y_value">Enter the y value: </string>
+    <string name="z_value">Enter the z value: </string>
+    <string name="map_settings">Change the dimensions of the map</string>
+    <string name="reset_pos">Reset</string>
 
 </resources>

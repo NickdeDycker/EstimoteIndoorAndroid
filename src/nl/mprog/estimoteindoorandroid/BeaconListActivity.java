@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -24,8 +25,11 @@ import com.estimote.sdk.BeaconManager;
 import com.estimote.sdk.Region;
 import com.estimote.sdk.utils.L;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @SuppressLint("InflateParams") 
 public class BeaconListActivity extends Activity {	
@@ -72,10 +76,12 @@ public class BeaconListActivity extends Activity {
 				
 	    final EditText inputXPos = (EditText) textEntryView.findViewById(R.id.pos_x);
 	    final EditText inputYPos = (EditText) textEntryView.findViewById(R.id.pos_y);
-			
+	    //final EditText inputZPos = (EditText) textEntryView.findViewById(R.id.pos_z);
+		
 	    // Set the default value of the input to the current to value.
 	    inputXPos.setText(Float.toString(preferences.getFloat("x"+minorValue, 0)), TextView.BufferType.EDITABLE);
 	    inputYPos.setText(Float.toString(preferences.getFloat("y"+minorValue, 0)), TextView.BufferType.EDITABLE);
+	    //inputZPos.setText(Float.toString(preferences.getFloat("z"+minorValue, 0)), TextView.BufferType.EDITABLE);
 		
 	    AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(BeaconListActivity.this);
 	    dialogBuilder.setTitle("Change Settings: ");
@@ -88,6 +94,7 @@ public class BeaconListActivity extends Activity {
 		    // Save the changed x and y positions.
 		    editPref.putFloat("x"+minorValue, Float.valueOf(inputXPos.getText().toString())); 
 	        editPref.putFloat("y"+minorValue, Float.valueOf(inputYPos.getText().toString()));
+	        //editPref.putFloat("z"+minorValue, Float.valueOf(inputZPos.getText().toString()));
 	        editPref.commit();
 		  }
 	    });
@@ -117,15 +124,30 @@ public class BeaconListActivity extends Activity {
             // Note that beacons reported here are already sorted by estimated
             // distance between device and beacon.
             getActionBar().setSubtitle("Found beacons: " + beaconsList.size());
-            
+            List<Beacon> sortedBeaconList = sortBeaconsOnMinor(beaconsList);
             // Refresh the listViewAdapter with new beacons.
-            listViewAdapter.replaceWith(beaconsList);
+            listViewAdapter.replaceWith(sortedBeaconList);
           }
         });
       }
     });
   }
 
+  private List<Beacon> sortBeaconsOnMinor(List<Beacon> beaconList) {
+	  Map<Integer, Beacon> map1 = new HashMap<Integer, Beacon>();
+	  List<Integer> minorValueList = new ArrayList<Integer>();
+	  for (int i = 0; i < beaconList.size(); i++) {
+		  minorValueList.add(beaconList.get(i).getMinor());
+		  map1.put(minorValueList.get(i), beaconList.get(i));
+	  }
+	  Collections.sort(minorValueList);
+	  List<Beacon> sortedBeaconList = new ArrayList<Beacon>();	
+	  for (int i = 0; i < beaconList.size(); i++) {
+		  sortedBeaconList.add(map1.get(minorValueList.get(i)));
+	  }
+	  return sortedBeaconList;
+  }
+  
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
     getMenuInflater().inflate(R.menu.scan_menu, menu);
@@ -228,6 +250,7 @@ public class BeaconListActivity extends Activity {
         }
       }
     });
+    
   }
 
 }

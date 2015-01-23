@@ -1683,12 +1683,13 @@ containing a value of this type.
         public static final int never=0x7f090017;
         public static final int none=0x7f09000f;
         public static final int normal=0x7f09000b;
-        public static final int pos_x=0x7f09004a;
-        public static final int pos_y=0x7f09004c;
+        public static final int pos_x=0x7f09004b;
+        public static final int pos_y=0x7f09004d;
         public static final int progress_circular=0x7f090007;
         public static final int progress_horizontal=0x7f090008;
         public static final int radio=0x7f09002d;
-        public static final int refresh=0x7f09004d;
+        public static final int refresh=0x7f09004e;
+        public static final int reset_pos=0x7f090049;
         public static final int search_badge=0x7f090037;
         public static final int search_bar=0x7f090036;
         public static final int search_button=0x7f090038;
@@ -1714,8 +1715,8 @@ containing a value of this type.
         public static final int useLogo=0x7f090013;
         public static final int withText=0x7f090018;
         public static final int wrap_content=0x7f090009;
-        public static final int x_title=0x7f090049;
-        public static final int y_title=0x7f09004b;
+        public static final int x_title=0x7f09004a;
+        public static final int y_title=0x7f09004c;
     }
     public static final class integer {
         /**  The maximum number of action buttons that should be permitted within
@@ -1832,9 +1833,16 @@ containing a value of this type.
         /**  Description of a share target (both in the list of such or the default share button) in a ShareActionProvider (share UI). [CHAR LIMIT=NONE] 
          */
         public static final int abc_shareactionprovider_share_with_application=0x7f0a000d;
-        public static final int action_settings=0x7f0a0011;
+        public static final int action_settings=0x7f0a0010;
         public static final int app_name=0x7f0a000f;
-        public static final int hello_world=0x7f0a0010;
+        public static final int formal_app_name=0x7f0a0011;
+        public static final int map_button=0x7f0a0012;
+        public static final int map_settings=0x7f0a0017;
+        public static final int measure_button=0x7f0a0013;
+        public static final int reset_pos=0x7f0a0018;
+        public static final int x_value=0x7f0a0014;
+        public static final int y_value=0x7f0a0015;
+        public static final int z_value=0x7f0a0016;
     }
     public static final class style {
         /** 

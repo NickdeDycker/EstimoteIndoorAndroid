@@ -8,7 +8,7 @@
     <TextView android:id="@+id/x_title"
         	  android:layout_width="wrap_content"
         	  android:layout_height="wrap_content"
-        	  android:text="Enter the x value: "/>
+        	  android:text="@string/x_value"/>
     
     <EditText android:id="@+id/pos_x"
         	  android:layout_width="wrap_content"
@@ -18,7 +18,7 @@
     <TextView android:id="@+id/y_title"
         	  android:layout_width="wrap_content"
         	  android:layout_height="wrap_content"
-        	  android:text="Enter the y value: "/>
+        	  android:text="@string/y_value"/>
     
     <EditText android:id="@+id/pos_y"
         	  android:layout_width="wrap_content"
