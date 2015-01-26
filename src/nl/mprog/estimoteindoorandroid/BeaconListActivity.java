@@ -23,6 +23,7 @@ import android.widget.TextView;
 import com.estimote.sdk.Beacon;
 import com.estimote.sdk.BeaconManager;
 import com.estimote.sdk.Region;
+import com.estimote.sdk.connection.BeaconConnection;
 import com.estimote.sdk.utils.L;
 
 import java.util.ArrayList;
@@ -38,7 +39,7 @@ public class BeaconListActivity extends Activity {
   private static final String TAG = BeaconListActivity.class.getSimpleName();
 
   public static final String EXTRAS_BEACON = "extrasBeacon";
-
+  
   private static final int REQUEST_ENABLE_BT = 1234;
   private static final Region ALL_ESTIMOTE_BEACONS_REGION = new Region("rid", null, null, null);
 
@@ -76,12 +77,12 @@ public class BeaconListActivity extends Activity {
 				
 	    final EditText inputXPos = (EditText) textEntryView.findViewById(R.id.pos_x);
 	    final EditText inputYPos = (EditText) textEntryView.findViewById(R.id.pos_y);
-	    //final EditText inputZPos = (EditText) textEntryView.findViewById(R.id.pos_z);
+	    final EditText inputZPos = (EditText) textEntryView.findViewById(R.id.pos_z);
 		
 	    // Set the default value of the input to the current to value.
 	    inputXPos.setText(Float.toString(preferences.getFloat("x"+minorValue, 0)), TextView.BufferType.EDITABLE);
 	    inputYPos.setText(Float.toString(preferences.getFloat("y"+minorValue, 0)), TextView.BufferType.EDITABLE);
-	    //inputZPos.setText(Float.toString(preferences.getFloat("z"+minorValue, 0)), TextView.BufferType.EDITABLE);
+	    inputZPos.setText(Float.toString(preferences.getFloat("z"+minorValue, 0)), TextView.BufferType.EDITABLE);
 		
 	    AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(BeaconListActivity.this);
 	    dialogBuilder.setTitle("Change Settings: ");
@@ -94,7 +95,7 @@ public class BeaconListActivity extends Activity {
 		    // Save the changed x and y positions.
 		    editPref.putFloat("x"+minorValue, Float.valueOf(inputXPos.getText().toString())); 
 	        editPref.putFloat("y"+minorValue, Float.valueOf(inputYPos.getText().toString()));
-	        //editPref.putFloat("z"+minorValue, Float.valueOf(inputZPos.getText().toString()));
+	        editPref.putFloat("z"+minorValue, Float.valueOf(inputZPos.getText().toString()));
 	        editPref.commit();
 		  }
 	    });

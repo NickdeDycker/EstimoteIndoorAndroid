@@ -80,7 +80,7 @@ public class BeaconListAdapter extends BaseAdapter {
 	ArrayList<Double> distanceArray = distances.get(minor);
 	distanceArray.add(dist);
 	
-	// This way it only remembers the last 5 measured distances.
+	// This way it only remembers the last measured distances.
 	if (distanceArray.size() > 100) {
 	  distanceArray.remove(0);
 	}
@@ -109,28 +109,6 @@ public class BeaconListAdapter extends BaseAdapter {
     holder.posTextView.setText("Position(x, y, z): \t \t" + "(" + preferences.getFloat("x"+minor, -1) + ", " + 
     							preferences.getFloat("y"+minor, 0) + ", " + preferences.getFloat("z"+minor, 0) + ")");
     holder.rssiTextView.setText("RSSI: " + beacon.getRssi() + "\t Measured Power: " + beacon.getMeasuredPower());
-
-    BeaconConnection connection = new BeaconConnection(c, beacon, new BeaconConnection.ConnectionCallback() {
-        @Override 
-        public void onAuthenticated(BeaconConnection.BeaconCharacteristics chars) {
-        	holder.powerTextView.setText("Power works: " + chars.getBroadcastingPower());
-        }
-
-        @Override 
-        public void onAuthenticationError() {
-        	holder.powerTextView.setText("Power works1: ");
-        }
-
-        @Override 
-        public void onDisconnected() {
-        	holder.powerTextView.setText("Power works2: ");
-        }
-      });
-      Log.d("connect", "connect: " + connection.isConnected());
-      connection.authenticate();
-      Log.d("connect", "connect2: " + connection.isConnected());
-      connection.close();
-    
   }
 
   @SuppressLint("InflateParams") 
@@ -148,7 +126,6 @@ public class BeaconListAdapter extends BaseAdapter {
     final TextView distanceTextView;
     final TextView posTextView;
     final TextView rssiTextView;
-    final TextView powerTextView;
 
     ViewHolder(View view) {
       uuidTextView = (TextView) view.findViewWithTag("uuid");
@@ -156,7 +133,6 @@ public class BeaconListAdapter extends BaseAdapter {
       distanceTextView = (TextView) view.findViewWithTag("distance");
       posTextView = (TextView) view.findViewWithTag("position");
       rssiTextView = (TextView) view.findViewWithTag("rssi");
-      powerTextView = (TextView) view.findViewWithTag("power");
     }
   }
 }

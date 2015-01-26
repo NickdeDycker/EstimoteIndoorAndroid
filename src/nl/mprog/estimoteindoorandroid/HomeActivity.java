@@ -11,7 +11,10 @@ import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import com.estimote.sdk.Beacon;
 import com.estimote.sdk.BeaconManager;
@@ -19,7 +22,9 @@ import com.estimote.sdk.Region;
 import com.estimote.sdk.Utils;
 import com.estimote.sdk.utils.L;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.HashMap;
 
@@ -102,34 +107,68 @@ public class HomeActivity extends Activity {
         startActivity(mapPosIntent);
 	  }
     });
-    
+    final DecimalFormat df = new DecimalFormat("#0.####");
     final Button measureButton = (Button) findViewById(R.id.single_measure);
+    final TableLayout tl = (TableLayout) findViewById(R.id.table_distance);
     
-    // The button will calculate the average distance to each beacon and show this in a TextView.
+    // The button will calculate the distance to each beacon and show this in a TextView.
     measureButton.setOnClickListener(new View.OnClickListener() {
 	  @Override
 	  public void onClick(View v) {
-	    // Clear the TextView.
-	    results.setText("");
-	     
-	    // Calculate the average for each beacon and add this to the TextView.
+		tl.removeAllViews();
+
+	    TableRow textRow = new TableRow(HomeActivity.this);
+	    textRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
+	    LayoutParams params = new TableRow.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f);
+	      
+	    TextView minorStringText = new TextView(HomeActivity.this);
+	    minorStringText.setText("Minor");
+	    minorStringText.setLayoutParams(params);
+	      
+	    TextView avgStringText = new TextView(HomeActivity.this);
+	    avgStringText.setText("Average");
+	    avgStringText.setLayoutParams(params);
+	      
+	    TextView medStringText = new TextView(HomeActivity.this);
+	    medStringText.setText("Median");
+	    medStringText.setLayoutParams(params);
+	      
+	    textRow.addView(minorStringText);
+	    textRow.addView(avgStringText);
+	    textRow.addView(medStringText);
+	    tl.addView(textRow);
+	    
+	    // Calculate the distance for each beacon and add this to the TextView.
 	    for (int i = 0; i < minorValues.size(); i ++) {
 	      int minorVal = minorValues.get(i);
 	      ArrayList<Double> dist = distances.get(minorVal);
-	      double total = 0;
-	      for (double element : dist) {
-	    	total += element;
-	      }
-	      double avg = total / dist.size();
-	      results.append("Minor: \t" + minorVal + "\t\t" + "  dist: \t" + avg + "\n");
+	      double avg = average(dist);
+	      double med = median(dist);
 	      
+	      TableRow newRow = new TableRow(HomeActivity.this);
+	      newRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
+	      
+	      TextView minorText = new TextView(HomeActivity.this);
+	      minorText.setText(String.valueOf(minorVal));
+	      minorText.setLayoutParams(params);
+	      
+	      TextView avgText = new TextView(HomeActivity.this);
+	      avgText.setText(String.valueOf(df.format(avg)));
+	      avgText.setLayoutParams(params);
+	      
+	      TextView medText = new TextView(HomeActivity.this);
+	      medText.setText(String.valueOf(df.format(med)));
+	      medText.setLayoutParams(params);
+	      
+	      newRow.addView(minorText);
+	      newRow.addView(avgText);
+	      newRow.addView(medText);
+	      tl.addView(newRow);
+	      
+	      results.append(minorVal + "\t\t\t\t\t" + df.format(avg) + "\t\t\t\t\t" + df.format(med) + "\n");
 	    };
-	    //results.append("\n" + distances.get(33028));
 	  }
     });
-    
-    // Configure verbose debug logging.
-    L.enableDebugLogging(true);
 
     // Configure BeaconManager.
     beaconManager = new BeaconManager(this);
@@ -144,17 +183,13 @@ public class HomeActivity extends Activity {
             // Note that beacons reported here are already sorted by estimated
             // distance between device and beacon.
             beaconlistButton.setText("List of beacons (Found: " + beacons.size() + ")");
-            results.setText("");
+            
             // Add distances to the ArrayLists.
             for (int i = 0; i < beacons.size(); i++) {
               Beacon currentBeacon = beacons.get(i);
               Double distance = Utils.computeAccuracy(currentBeacon);
               int minor = currentBeacon.getMinor();
-              if (minor == 33028) {
-	              Parcel p1 = Parcel.obtain();
-	              p1.writeString("This is a parcel");
-	              currentBeacon.writeToParcel(p1 , 1);
-              }
+
               // Check if the beacon is just found.
               if (!distances.containsKey(minor)) {
             	minorValues.add(minor);
@@ -174,6 +209,30 @@ public class HomeActivity extends Activity {
         });
       }
     });
+  }
+  
+  /*
+   * Calculate the distance to beacon by taking the median.
+   */
+  private double median(ArrayList<Double> distanceToBeacon) {
+	  Collections.sort(distanceToBeacon);
+	  int half = (int) (0.5 * distanceToBeacon.size());
+	  if (distanceToBeacon.size() == 1) {
+		  half = 0;
+	  }
+	  return distanceToBeacon.get(half);
+  }
+
+  /*
+   * Calculate the distance to beacon by taking the average.
+   */
+  private double average(ArrayList<Double> distanceToBeacon) {
+	double total = 0;
+		  
+	for (double element : distanceToBeacon) {
+		total += element;
+	}
+	return total / distanceToBeacon.size();
   }
   
   @Override
