@@ -1,6 +1,5 @@
 package nl.mprog.estimoteindoorandroid;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -16,7 +15,6 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -30,25 +28,18 @@ import com.estimote.sdk.Beacon;
 import com.estimote.sdk.BeaconManager;
 import com.estimote.sdk.Region;
 import com.estimote.sdk.Utils;
-import com.estimote.sdk.connection.BeaconConnection;
-import com.estimote.sdk.utils.L;
 
-import java.lang.reflect.Array;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-
-@SuppressLint({ "InflateParams", "UseSparseArrays" }) 
+ 
 public class MapPosActivity extends Activity {
-	
   private SharedPreferences preferences;
   private SharedPreferences.Editor editPref;	
 
   // Bluetooth and Beacon constants.
-  private static final String TAG = BeaconListActivity.class.getSimpleName();
-
   public static final String EXTRAS_BEACON = "extrasBeacon";
 
   private static final int REQUEST_ENABLE_BT = 1234;
@@ -97,7 +88,6 @@ public class MapPosActivity extends Activity {
     mapImage.setAdjustViewBounds(true);
     
     // Set a scaled version of the map to the ImageView. 
-    // NOTE TO SELF: DOESNT WORK PERFECT WITH LONGER PICTURES/BIGGER HEIGHT.
     final Bitmap imageRaw = BitmapFactory.decodeResource(getResources(), R.drawable.raster);
     getScreenSizes(imageRaw);
     Bitmap imageScaled = Bitmap.createScaledBitmap(imageRaw, widthPixels, heightPixels, true);
@@ -105,6 +95,7 @@ public class MapPosActivity extends Activity {
     
     workingBitmap = Bitmap.createScaledBitmap(imageRaw, widthPixels, heightPixels, true);
     
+    // Reset the distances and measurement counter to default within the scanning method.
     final Button resetButton = (Button) findViewById(R.id.reset_pos);
     resetButton.setOnClickListener(new View.OnClickListener() {
 		@Override
@@ -159,6 +150,7 @@ public class MapPosActivity extends Activity {
 	  }
 	});
 
+    // In order to show the distances with less decimals.
     final DecimalFormat df = new DecimalFormat("#0.####");
     
     // Blue paint to show beacons on the map.
@@ -186,10 +178,10 @@ public class MapPosActivity extends Activity {
             
             // Reset everything to default values when the button is pressed.
             if (reset) {
-    			measurements = 0;
-    			distances = new HashMap<Integer, ArrayList<Double>>();
-    			distanceAvg = new HashMap<Integer, Double>();
-    			reset = false;
+              measurements = 0;
+              distances = new HashMap<Integer, ArrayList<Double>>();
+              distanceAvg = new HashMap<Integer, Double>();
+              reset = false;
             }
             
             // Copy the workingBitmap for a clean sheet for the Canvas.
@@ -205,7 +197,7 @@ public class MapPosActivity extends Activity {
 	        	  continue;
 	          }
 	          
-              // Check if the beacon is just found. Double if statements because of the reset button.
+              // Check if the beacon is just found. Double if-statements because of the reset button.
               if (!minorValues.contains(minorVal)) {
             	minorValues.add(minorVal);
               }
@@ -217,36 +209,31 @@ public class MapPosActivity extends Activity {
 	          // Predefined variables for creating a picture with drawn circles on it.
 	          float[] locationBeacon = getLocation(currentBeacon);
 	          
-	          // Draw a circle with the distance to the user as radius.
-	          double currentAverage = mapXSize * 0.05;
-	          //Double currentAverage = distanceAvg.get(minorVal);
-	          //float z = preferences.getFloat("z"+minorVal, 0);
-	          //currentAverage = Math.sqrt((currentAverage * currentAverage) - (z * z));
-	  	      canvas.drawCircle(locationBeacon[0], locationBeacon[1], (float) (currentAverage/mapXSize) * widthPixels, 
-	  	    		  			paintBlue);  
-	  	      //canvas.drawCircle(locationBeacon[0], locationBeacon[1], (float) 0.1 * widthPixels, paintBlue);  
+	          // Draw a circle at the beacon position.
+	  	      canvas.drawCircle(locationBeacon[0], locationBeacon[1], (float) 0.05 * widthPixels, paintBlue);   
 	        }
 
-	        // At least 40 measurements before calculating the user positon
+	        // At least 40 measurements before calculating the user position.
 	        if (measurements > 39) {
-		        // Every second a new position measurement
-		        int temp = measurements;
-		        while (temp > 9) {
-		        	temp -= 10;
-		        }
-		        
-	        	if (temp == 0) {
-	        		userPos = userLocation(beaconsList);
-	        	}	   
-	        	
-	        	mapInfo.append("User Position (x, y):  " + userPos[0] + ", " + userPos[1] + "\n" + "Maximum error:  " + 
+		      // Every second a new position measurement
+		      int temp = measurements;
+		      while (temp > 9) {
+		    	temp -= 10;
+		      }
+		       
+		      if (temp == 0) {
+	        	userPos = userLocation(beaconsList);
+		      }	   
+		      // Add the user information to the TextView.
+		      mapInfo.append("User Position (x, y):  " + userPos[0] + ", " + userPos[1] + "\n" + "Maximum error:  " + 
 	        					userPos[2] + "\n");
 
-	        	canvas.drawCircle(widthPixels *(userPos[0]/mapXSize), heightPixels * (userPos[1]/mapYSize), 
-	        			(float) (userPos[2]/mapXSize) * widthPixels, paintRed);
+		      canvas.drawCircle(widthPixels *(userPos[0]/mapXSize), heightPixels * (userPos[1]/mapYSize), 
+	        					(float) (userPos[2]/mapXSize) * widthPixels, paintRed);
 	        	
 	        } else {
-	        	mapInfo.append("Time until measurement: " + df.format(4 - measurements * 0.1));
+	          // A countdown counter.
+	          mapInfo.append("Time until measurement: " + df.format(4 - measurements * 0.1));
 	        }
             measurements += 1;     
 	        mapImage.setImageBitmap(mutableBitmap);
@@ -260,82 +247,80 @@ public class MapPosActivity extends Activity {
    * Algorithm to calculate the user location.
    */
   private float[] userLocation(List<Beacon> beaconsList) {
-	  float x_user = 0;
-	  float y_user = 0;
-	  float r_user = 1;
+	float x_user = 0;
+	float y_user = 0;
+	float r_user = 1;
 	  
-	  // Check for legitimate beacons, those who have been selected within the area.
-	  ArrayList<float[]> circleArray = new ArrayList<float[]>();
-	  for (int i = 0; i < beaconsList.size(); i++) {
-		  int minorVal = beaconsList.get(i).getMinor();
-		  float r;
-		  try {
-			  r = distanceAvg.get(minorVal).floatValue();
-		  } catch (NullPointerException e) {
-			  continue;
-		  }
-		  float x = preferences.getFloat("x" + minorVal, -1);
-		  float y = preferences.getFloat("y" + minorVal, 0);
-		  float z = preferences.getFloat("z" + minorVal, 0);
-		  if (x >= 0 && y >= 0) {
-			  // Remove the height difference between the phone and beacon from the distance.
-			  r = (float) Math.sqrt((r * r) - (z * z));
-			  circleArray.add(new float[]{x, y, r});
-			  x_user += x;
-			  y_user += y;
-					  
-		  } 
+	// Check for legitimate beacons, those who have been selected within the area.
+	ArrayList<float[]> circleArray = new ArrayList<float[]>();
+	for (int i = 0; i < beaconsList.size(); i++) {
+	  int minorVal = beaconsList.get(i).getMinor();
+	  float r;
+	  try {
+	    r = distanceAvg.get(minorVal).floatValue();
+	  } catch (NullPointerException e) {
+	    continue;
 	  }
+	  float x = preferences.getFloat("x" + minorVal, -1);
+	  float y = preferences.getFloat("y" + minorVal, 0);
+	  float z = preferences.getFloat("z" + minorVal, 0);
+	  if (x >= 0 && y >= 0) {
+   	    // Remove the height difference between the phone and beacon from the distance.
+		r = (float) Math.sqrt((r * r) - (z * z));
+		circleArray.add(new float[]{x, y, r});
+		x_user += x;
+		y_user += y;			  
+	  } 
+	}
 	  
-	  // Only calculate the position when 2 or more beacons are available.
-	  float circleNumber = circleArray.size();
-	  if (circleNumber < 2) {
-		  return new float[]{x_user, y_user, r_user};
-	  }
-	  
-	  // The average position between all the valid circles.
-	  x_user = x_user / circleNumber;
-	  y_user /= circleNumber;
-
-	  float prev1Error = 0;
-	  float currentError = 1000000;
-
-	  // If the last error is the same as the current error no better value will be calculated.
-	  while (prev1Error != currentError) {
-		  prev1Error = currentError;
-		  // Calculate the position up, down, left and right of the current one to calculate its error there.
-		  ArrayList<float[]> newPositions = new ArrayList<float[]>();
-		  newPositions.add(new float[]{(float) (x_user + 0.1), y_user});
-		  newPositions.add(new float[]{(float) (x_user - 0.1), y_user});
-		  newPositions.add(new float[]{x_user, (float) (y_user + 0.1)});
-		  newPositions.add(new float[]{x_user, (float) (y_user - 0.1)});
-		  
-		  // For each position in a direction calculate the error.
-		  for (float[] direction : newPositions) {
-			  
-			  float error = 0;
-			  ArrayList<Float> dist = new ArrayList<Float>();
-			  
-			  // The error on a certain position for each beacon.
-			  for (int i = 0; i < circleNumber; i++) {
-				  float[] circlePos = circleArray.get(i);
-				  dist.add((float) (Math.sqrt(Math.pow(circlePos[0] - direction[0], 2) + 
-						  Math.pow(circlePos[1] - direction[1], 2)) - circlePos[2]));
-				  error += Math.pow(dist.get(dist.size() - 1), 2);
-			  }
-			  error = (float) Math.sqrt(error);
-			  
-			  // If the error is smaller we take the values.
-			  if (error < currentError) {
-				  Collections.sort(dist);
-				  r_user = dist.get(dist.size() - 1);
-				  x_user = direction[0];
-				  y_user = direction[1];
-				  currentError = error;
-			  }
-		  }		  
-	  }
+	// Only calculate the position when 2 or more beacons are available.
+	float circleNumber = circleArray.size();
+	if (circleNumber < 2) {
 	  return new float[]{x_user, y_user, r_user};
+	}
+	  
+	// The average position between all the valid circles.
+	x_user = x_user / circleNumber;
+	y_user /= circleNumber;
+
+	float prev1Error = 0;
+	float currentError = 1000000;
+
+	// If the last error is the same as the current error no better value will be calculated.
+	while (prev1Error != currentError) {
+	  prev1Error = currentError;
+	  // Calculate the position up, down, left and right of the current one to calculate its error there.
+	  ArrayList<float[]> newPositions = new ArrayList<float[]>();
+	  newPositions.add(new float[]{(float) (x_user + 0.1), y_user});
+	  newPositions.add(new float[]{(float) (x_user - 0.1), y_user});
+	  newPositions.add(new float[]{x_user, (float) (y_user + 0.1)});
+	  newPositions.add(new float[]{x_user, (float) (y_user - 0.1)});
+	  
+	  // For each position in a direction calculate the error.
+	  for (float[] direction : newPositions) {
+		float error = 0;
+		ArrayList<Float> dist = new ArrayList<Float>();
+		  
+		// The error on a certain position for each beacon.
+		for (int i = 0; i < circleNumber; i++) {
+		  float[] circlePos = circleArray.get(i);
+		  dist.add((float) (Math.sqrt(Math.pow(circlePos[0] - direction[0], 2) + 
+				  	Math.pow(circlePos[1] - direction[1], 2)) - circlePos[2]));
+		  error += Math.pow(dist.get(dist.size() - 1), 2);
+		}
+		error = (float) Math.sqrt(error);
+			  
+		// If the error is smaller we take the values.
+		if (error < currentError) {
+		  Collections.sort(dist);
+		  r_user = dist.get(dist.size() - 1);
+		  x_user = direction[0];
+		  y_user = direction[1];
+		  currentError = error;
+		}
+	  }		  
+	}
+	return new float[]{x_user, y_user, r_user};
   }
   
   /*
@@ -356,12 +341,12 @@ public class MapPosActivity extends Activity {
    * Calculate the distance to beacon by taking the median.
    */
   private void median(ArrayList<Double> distanceToBeacon, int minorVal) {
-	  Collections.sort(distanceToBeacon);
-	  int half = (int) (0.5 * distanceToBeacon.size());
-	  if (distanceToBeacon.size() == 1) {
-		  half = 0;
-	  }
-	  distanceAvg.put(minorVal, distanceToBeacon.get(half));
+	Collections.sort(distanceToBeacon);
+	int half = (int) (0.5 * distanceToBeacon.size());
+	if (distanceToBeacon.size() == 1) {
+	  half = 0;
+	}
+	distanceAvg.put(minorVal, distanceToBeacon.get(half));
   }
   
   /*
@@ -389,13 +374,6 @@ public class MapPosActivity extends Activity {
 	// Calculate the ratio of the beacon position with the map
 	float ratioX = beaconX / mapXSize;
 	float ratioY = beaconY / mapYSize;
-	  
-	if (ratioX > 1) {
-	  ratioX = 1;
-	}
-	if (ratioY > 1) {
-	  ratioY = 1;
-	}
 	  
 	// Calculate the number of pixels it has to move.
 	float locationPixelsX = (ratioX * widthPixels);
@@ -465,7 +443,6 @@ public class MapPosActivity extends Activity {
 	  try {
 		beaconManager.stopRanging(ALL_ESTIMOTE_BEACONS_REGION);
 	  } catch (RemoteException e) {
-		Log.d(TAG, "Error while stopping ranging", e);
 	  }
 		
 	  editPref.putBoolean("intent_stop", false);
@@ -511,7 +488,6 @@ public class MapPosActivity extends Activity {
 	  try {
 	    beaconManager.stopRanging(ALL_ESTIMOTE_BEACONS_REGION);
 	  } catch (RemoteException e) {
-	    Log.d(TAG, "Error while stopping ranging", e);
 	  }
 	}
 	editPref.remove("intent_stop");
@@ -542,7 +518,6 @@ public class MapPosActivity extends Activity {
           beaconManager.startRanging(ALL_ESTIMOTE_BEACONS_REGION);
         } catch (RemoteException e) {
           getActionBar().setSubtitle("Can't start ranging");
-          Log.e(TAG, "Cannot start ranging", e);
         }
       }
     });

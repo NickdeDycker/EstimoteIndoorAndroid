@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,16 +11,13 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 import com.estimote.sdk.Beacon;
 import com.estimote.sdk.Utils;
-import com.estimote.sdk.connection.BeaconConnection;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
-@SuppressLint("UseSparseArrays") 
 public class BeaconListAdapter extends BaseAdapter {
-
   ArrayList<Beacon> beacons;
   private LayoutInflater inflater;
   private SharedPreferences preferences;
@@ -30,16 +26,17 @@ public class BeaconListAdapter extends BaseAdapter {
   ArrayList<Integer> minorValues = new ArrayList<Integer>();
   HashMap<Integer, ArrayList<Double>> distances = new HashMap<Integer, ArrayList<Double>>();
   
-  
   public BeaconListAdapter(Context context) {
     this.inflater = LayoutInflater.from(context);
     this.beacons = new ArrayList<Beacon>();
     preferences = PreferenceManager.getDefaultSharedPreferences(context);
     c = context;
   }
-
+  
+  /*
+   * Replaces the old list with new beacons.
+   */
   public void replaceWith(Collection<Beacon> newBeacons) {
-	// For when new beacons are within range.
     this.beacons.clear();
     this.beacons.addAll(newBeacons);
     notifyDataSetChanged();
@@ -70,7 +67,6 @@ public class BeaconListAdapter extends BaseAdapter {
   /*
    * Adds a distance and calculates the average of multiple measurements of the distance to a beacon.
    */
-  
   private double average(int minor, double dist) {
 
 	if (!distances.containsKey(minor)) {

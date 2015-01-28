@@ -1658,6 +1658,7 @@ containing a value of this type.
         public static final int bottom=0x7f09001e;
         public static final int checkbox=0x7f09002b;
         public static final int collapseActionView=0x7f090015;
+        public static final int confirm_pos=0x7f090059;
         public static final int decor_content_parent=0x7f090031;
         public static final int default_activity_button=0x7f090026;
         public static final int device_list=0x7f090046;
@@ -1680,16 +1681,20 @@ containing a value of this type.
         public static final int map_settings=0x7f090049;
         public static final int map_size=0x7f090047;
         public static final int middle=0x7f09001d;
+        public static final int minor=0x7f09005b;
+        public static final int minor_row=0x7f090058;
         public static final int never=0x7f090017;
         public static final int none=0x7f09000f;
         public static final int normal=0x7f09000b;
         public static final int pos_x=0x7f09004c;
         public static final int pos_y=0x7f09004e;
         public static final int pos_z=0x7f090050;
+        public static final int power=0x7f09005e;
+        public static final int power_row=0x7f09005c;
         public static final int progress_circular=0x7f090007;
         public static final int progress_horizontal=0x7f090008;
         public static final int radio=0x7f09002d;
-        public static final int refresh=0x7f090051;
+        public static final int refresh=0x7f09005f;
         public static final int reset_pos=0x7f09004a;
         public static final int search_badge=0x7f090037;
         public static final int search_bar=0x7f090036;
@@ -1701,6 +1706,11 @@ containing a value of this type.
         public static final int search_plate=0x7f09003b;
         public static final int search_src_text=0x7f09003c;
         public static final int search_voice_btn=0x7f090040;
+        public static final int set_minor_text=0x7f09005a;
+        public static final int set_power_text=0x7f09005d;
+        public static final int set_x_text=0x7f090053;
+        public static final int set_y_text=0x7f090055;
+        public static final int set_z_text=0x7f090057;
         public static final int shortcut=0x7f09002c;
         public static final int showCustom=0x7f090010;
         public static final int showHome=0x7f090011;
@@ -1711,14 +1721,18 @@ containing a value of this type.
         public static final int submit_area=0x7f09003e;
         public static final int tabMode=0x7f09000c;
         public static final int table_distance=0x7f090044;
+        public static final int table_options=0x7f090051;
         public static final int title=0x7f090029;
         public static final int top=0x7f09001f;
         public static final int up=0x7f090001;
         public static final int useLogo=0x7f090013;
         public static final int withText=0x7f090018;
         public static final int wrap_content=0x7f090009;
+        public static final int x_row=0x7f090052;
         public static final int x_title=0x7f09004b;
+        public static final int y_row=0x7f090054;
         public static final int y_title=0x7f09004d;
+        public static final int z_row=0x7f090056;
         public static final int z_title=0x7f09004f;
     }
     public static final class integer {
@@ -1778,7 +1792,9 @@ containing a value of this type.
         public static final int map_position=0x7f03001c;
         public static final int settings_dialog=0x7f03001d;
         public static final int settings_dialog_map=0x7f03001e;
-        public static final int support_simple_spinner_dropdown_item=0x7f03001f;
+        public static final int single_beacon_screen=0x7f03001f;
+        public static final int support_simple_spinner_dropdown_item=0x7f030020;
+        public static final int tablerow_border=0x7f030021;
     }
     public static final class menu {
         public static final int scan_menu=0x7f0c0000;

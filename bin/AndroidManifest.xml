@@ -38,6 +38,11 @@
         android:name="nl.mprog.estimoteindoorandroid.MapPosActivity"
         android:label="See position on map"
         android:screenOrientation="portrait"/>
+    
+    <activity
+        android:name="nl.mprog.estimoteindoorandroid.singleBeaconActivity"
+        android:label="See position on map"
+        android:screenOrientation="portrait"/>
 
     <!-- Estimote service responsible for scanning beacons. -->
     <service android:name="com.estimote.sdk.service.BeaconService"

@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+    
+ <TableLayout android:id="@+id/table_options"
+      		   android:orientation="vertical"
+               android:layout_width="match_parent"
+               android:layout_height="match_parent"
+ 			   android:stretchColumns="1">
+ 				
+      <TableRow android:id="@+id/x_row"
+      		    android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
+                android:background="@layout/tablerow_border" >
+          
+          <TextView android:id="@+id/set_x_text"
+      		   		android:orientation="vertical"
+               		android:layout_span="1" 
+               		android:layout_gravity="center"
+               		android:textStyle="bold"
+               		android:textSize="18sp"
+               		android:text="Enter the x value: "/>
+          
+	      <EditText android:id="@+id/pos_x"
+	        	    android:layout_width="wrap_content"
+	        	    android:layout_height="wrap_content"
+	        	    android:layout_span="1"
+	        	    android:inputType="numberDecimal|numberSigned"/>
+          
+      </TableRow>   
+
+      <TableRow android:id="@+id/y_row"
+      		    android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
+                android:background="@layout/tablerow_border">"
+          
+          <TextView android:id="@+id/set_y_text"
+      		   		android:orientation="vertical"
+               		android:layout_span="1" 
+               		android:layout_gravity="center"
+               		android:textStyle="bold"
+               		android:textSize="18sp"
+               		android:text="Enter the y value: "/>
+          
+	      <EditText android:id="@+id/pos_y"
+	        	    android:layout_width="wrap_content"
+	        	    android:layout_height="wrap_content"
+	        	    android:layout_span="1"
+	        	    android:inputType="numberDecimal|numberSigned"/>
+          
+      </TableRow> 
+      
+      <TableRow android:id="@+id/z_row"
+      		    android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
+                android:background="@layout/tablerow_border" >
+          
+          <TextView android:id="@+id/set_z_text"
+      		   		android:orientation="vertical"
+               		android:layout_span="1" 
+               		android:layout_gravity="center"
+               		android:textStyle="bold"
+               		android:textSize="18sp"
+               		android:text="Enter the z value: "/>
+          
+	      <EditText android:id="@+id/pos_z"
+	        	    android:layout_width="wrap_content"
+	        	    android:layout_height="wrap_content"
+	        	    android:layout_span="1"
+	        	    android:inputType="numberDecimal|numberSigned"/>
+          
+      </TableRow> 
+
+      <TableRow android:id="@+id/minor_row"
+      		    android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
+                android:background="@layout/tablerow_border" >
+      
+	      <Button android:id="@+id/confirm_pos"
+	              android:layout_width="match_parent"
+	              android:layout_height="40dp"
+	              android:layout_span="2"
+	              android:text="confirm"
+	              android:textColor="@android:color/white"
+	      	  	  android:background="@layout/custom_button" />
+      
+      </TableRow>
+      
+      <TableRow android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
+                android:background="@layout/tablerow_border" >
+          
+          <TextView android:id="@+id/set_minor_text"
+      		   		android:orientation="vertical"
+               		android:layout_span="1" 
+               		android:layout_gravity="center"
+               		android:textStyle="bold"
+               		android:textSize="18sp"
+               		android:text="The minor: "/>
+          
+          <TextView android:id="@+id/minor"
+      		   		android:orientation="vertical"
+               		android:layout_span="1" 
+               		android:layout_gravity="center"
+               		android:textStyle="bold"
+               		android:textSize="18sp"
+               		android:text="connecting... "/>
+      </TableRow> 
+      
+      <TableRow android:id="@+id/power_row"
+      		    android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
+                android:background="@layout/tablerow_border" >
+          
+          <TextView android:id="@+id/set_power_text"
+      		   		android:orientation="vertical"
+               		android:layout_span="1" 
+               		android:layout_gravity="center"
+               		android:textStyle="bold"
+               		android:textSize="18sp"
+               		android:text="The current power: "/>
+          
+          <TextView android:id="@+id/power"
+      		   		android:orientation="vertical"
+               		android:layout_span="1" 
+               		android:layout_gravity="center"
+               		android:textStyle="bold"
+               		android:textSize="18sp"
+               		android:text="connecting... "/>
+      </TableRow> 
+      
+  </TableLayout>
+
+ 
+ 
+</LinearLayout>

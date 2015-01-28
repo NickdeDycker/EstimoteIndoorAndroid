@@ -1,30 +1,21 @@
 package nl.mprog.estimoteindoorandroid;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
-import android.text.InputType;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TextView;
+
 import com.estimote.sdk.Beacon;
 import com.estimote.sdk.BeaconManager;
 import com.estimote.sdk.Region;
-import com.estimote.sdk.connection.BeaconConnection;
-import com.estimote.sdk.utils.L;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,12 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@SuppressLint("InflateParams") 
 public class BeaconListActivity extends Activity {	
-  
   // Bluetooth and Beacon constants.
-  private static final String TAG = BeaconListActivity.class.getSimpleName();
-
   public static final String EXTRAS_BEACON = "extrasBeacon";
   
   private static final int REQUEST_ENABLE_BT = 1234;
@@ -60,70 +47,28 @@ public class BeaconListActivity extends Activity {
     
     // Set the custom ListView Adapter
     listViewAdapter = new BeaconListAdapter(this);
-    ListView list = (ListView) findViewById(R.id.device_list);
-    list.setAdapter(listViewAdapter);
-    list.setClickable(true);
+    ListView beaconListView = (ListView) findViewById(R.id.device_list);
+    beaconListView.setAdapter(listViewAdapter);
+    beaconListView.setClickable(true);
 
     // Set a dialogAlerter to change values of a beacon.
-    list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+    beaconListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
       public void onItemClick(AdapterView<?> parentView, View childView, int position, long id) {
-			
-	    // The LayoutInflater is needed for multiple inputs in the dialog.
-        LayoutInflater dialogInflater = LayoutInflater.from(BeaconListActivity.this);
-			
-	    // Retrieve the minor of the beacon from the Adapter.
-	    final int minorValue = listViewAdapter.beacons.get(position).getMinor();
-	    final View textEntryView = dialogInflater.inflate(R.layout.settings_dialog, null);
-				
-	    final EditText inputXPos = (EditText) textEntryView.findViewById(R.id.pos_x);
-	    final EditText inputYPos = (EditText) textEntryView.findViewById(R.id.pos_y);
-	    final EditText inputZPos = (EditText) textEntryView.findViewById(R.id.pos_z);
-		
-	    // Set the default value of the input to the current to value.
-	    inputXPos.setText(Float.toString(preferences.getFloat("x"+minorValue, 0)), TextView.BufferType.EDITABLE);
-	    inputYPos.setText(Float.toString(preferences.getFloat("y"+minorValue, 0)), TextView.BufferType.EDITABLE);
-	    inputZPos.setText(Float.toString(preferences.getFloat("z"+minorValue, 0)), TextView.BufferType.EDITABLE);
-		
-	    AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(BeaconListActivity.this);
-	    dialogBuilder.setTitle("Change Settings: ");
-	    dialogBuilder.setView(textEntryView);
-				
-	    // Set up the OK and Cancel button
-	    dialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() { 
-		  @Override
-		  public void onClick(DialogInterface dialog, int i) {
-		    // Save the changed x and y positions.
-		    editPref.putFloat("x"+minorValue, Float.valueOf(inputXPos.getText().toString())); 
-	        editPref.putFloat("y"+minorValue, Float.valueOf(inputYPos.getText().toString()));
-	        editPref.putFloat("z"+minorValue, Float.valueOf(inputZPos.getText().toString()));
-	        editPref.commit();
-		  }
-	    });
-	    dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-	      @Override
-	      public void onClick(DialogInterface dialog, int i) {
-	    	dialog.cancel();
-	      }
-	    });
-	
-	    dialogBuilder.show();
+        Intent intentSingleBeacon = new Intent(BeaconListActivity.this, singleBeaconActivity.class);
+        intentSingleBeacon.putExtra(EXTRAS_BEACON, listViewAdapter.getItem(position));
+        startActivity(intentSingleBeacon);
       }
     });
-    
-    // Configure verbose debug logging.
-    L.enableDebugLogging(true);
 
     // Configure BeaconManager.
     beaconManager = new BeaconManager(this);
     beaconManager.setRangingListener(new BeaconManager.RangingListener() {
       @Override
       public void onBeaconsDiscovered(Region region, final List<Beacon> beaconsList) {
-        // Note that results are not delivered on UI thread.
         runOnUiThread(new Runnable() {
           @Override
           public void run() {
-            // Note that beacons reported here are already sorted by estimated
-            // distance between device and beacon.
+            // The beacons are sorted based on distance from the user.
             getActionBar().setSubtitle("Found beacons: " + beaconsList.size());
             List<Beacon> sortedBeaconList = sortBeaconsOnMinor(beaconsList);
             // Refresh the listViewAdapter with new beacons.
@@ -134,6 +79,9 @@ public class BeaconListActivity extends Activity {
     });
   }
 
+  /*
+   * Sort the beacons based on their minor. 
+   */
   private List<Beacon> sortBeaconsOnMinor(List<Beacon> beaconList) {
 	  Map<Integer, Beacon> map1 = new HashMap<Integer, Beacon>();
 	  List<Integer> minorValueList = new ArrayList<Integer>();
@@ -141,6 +89,7 @@ public class BeaconListActivity extends Activity {
 		  minorValueList.add(beaconList.get(i).getMinor());
 		  map1.put(minorValueList.get(i), beaconList.get(i));
 	  }
+	  // Sort the list with minor values and rebuild the beacon list using the HashMap.
 	  Collections.sort(minorValueList);
 	  List<Beacon> sortedBeaconList = new ArrayList<Beacon>();	
 	  for (int i = 0; i < beaconList.size(); i++) {
@@ -159,23 +108,21 @@ public class BeaconListActivity extends Activity {
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
-	  
 	// Set the return button.
 	if (item.getItemId() == android.R.id.home) {
-	  final Intent intent = new Intent(BeaconListActivity.this, HomeActivity.class);
+	  final Intent intentHome = new Intent(BeaconListActivity.this, HomeActivity.class);
 		
-	  // Stop ranging/searching for beacons.
+	  // Stop ranging or searching for beacons.
 	  try {
 		beaconManager.stopRanging(ALL_ESTIMOTE_BEACONS_REGION);
 	  } catch (RemoteException e) {
-		Log.d(TAG, "Error while stopping ranging", e);
 	  }
 		
 	  // A variable to trigger onStop or not.
 	  editPref.putBoolean("intent_stop", false);
 	  editPref.commit();
 	  
-	  startActivity(intent);
+	  startActivity(intentHome);
 	  return true;
 	}
     return super.onOptionsItemSelected(item);
@@ -184,14 +131,12 @@ public class BeaconListActivity extends Activity {
   @Override
   protected void onDestroy() {
     beaconManager.disconnect();
-
     super.onDestroy();
   }
 
   @Override
   protected void onStart() {
     super.onStart();
-
     // Check if device supports Bluetooth Low Energy.
     if (!beaconManager.hasBluetooth()) {
       getActionBar().setSubtitle("Device does not have Bluetooth Low Energy");
@@ -209,13 +154,12 @@ public class BeaconListActivity extends Activity {
 
   @Override
   protected void onStop() {
-	// Quit asking for results.
+	// Quit asking for results, unless a intent has been started.
 	Boolean intentStop = preferences.getBoolean("intent_stop", true);
 	if (intentStop) {
 	  try {
 	    beaconManager.stopRanging(ALL_ESTIMOTE_BEACONS_REGION);
 	  } catch (RemoteException e) {
-	    Log.d(TAG, "Error while stopping ranging", e);
 	  }
 	}
 	editPref.remove("intent_stop");
@@ -247,11 +191,9 @@ public class BeaconListActivity extends Activity {
           beaconManager.startRanging(ALL_ESTIMOTE_BEACONS_REGION);
         } catch (RemoteException e) {
           getActionBar().setSubtitle("Can't start ranging");
-          Log.e(TAG, "Cannot start ranging", e);
         }
       }
     });
-    
   }
 
 }

@@ -1,12 +1,10 @@
 package nl.mprog.estimoteindoorandroid;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Parcel;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -16,19 +14,18 @@ import android.widget.Button;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+
 import com.estimote.sdk.Beacon;
 import com.estimote.sdk.BeaconManager;
 import com.estimote.sdk.Region;
 import com.estimote.sdk.Utils;
-import com.estimote.sdk.utils.L;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.HashMap;
-
-@SuppressLint("UseSparseArrays") 
+ 
 public class HomeActivity extends Activity {
 
   // Bluetooth and beacon constants.
@@ -45,9 +42,6 @@ public class HomeActivity extends Activity {
   private HashMap<Integer, ArrayList<Double>> distances = new HashMap<Integer, ArrayList<Double>>();
   
   private BeaconManager beaconManager;
-
-  // TextView to show all the distances of the beacons.
-  private TextView results;
   
   private SharedPreferences preferences;
   private SharedPreferences.Editor editPref;
@@ -59,8 +53,6 @@ public class HomeActivity extends Activity {
 
     preferences = PreferenceManager.getDefaultSharedPreferences(this);
     editPref = preferences.edit();
-    
-    results = (TextView) findViewById(R.id.show_result);
     
     beaconlistButton = (Button) findViewById(R.id.beacon_list);
     
@@ -74,7 +66,6 @@ public class HomeActivity extends Activity {
 		try {
 		  beaconManager.stopRanging(ALL_ESTIMOTE_BEACONS_REGION);
 		} catch (RemoteException e) {
-		  Log.d(TAG, "Error while stopping ranging", e);
 		}
 		
 		// A variable to trigger onStop or not.
@@ -97,7 +88,6 @@ public class HomeActivity extends Activity {
 		try {
 		  beaconManager.stopRanging(ALL_ESTIMOTE_BEACONS_REGION);
 		} catch (RemoteException e) {
-		  Log.d(TAG, "Error while stopping ranging", e);
 		}
 		
 		// A variable to trigger onStop or not.
@@ -107,37 +97,42 @@ public class HomeActivity extends Activity {
         startActivity(mapPosIntent);
 	  }
     });
+    
+    // DecimalFormat to show the distances with only 4 decimals.
     final DecimalFormat df = new DecimalFormat("#0.####");
     final Button measureButton = (Button) findViewById(R.id.single_measure);
-    final TableLayout tl = (TableLayout) findViewById(R.id.table_distance);
+    final TableLayout distanceTable = (TableLayout) findViewById(R.id.table_distance);
     
     // The button will calculate the distance to each beacon and show this in a TextView.
     measureButton.setOnClickListener(new View.OnClickListener() {
 	  @Override
 	  public void onClick(View v) {
-		tl.removeAllViews();
+		distanceTable.removeAllViews();
 
 	    TableRow textRow = new TableRow(HomeActivity.this);
-	    textRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
-	    LayoutParams params = new TableRow.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f);
+	    LayoutParams paramTextView = new TableRow.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f);
+	    TableLayout.LayoutParams paramTableRow = new TableLayout.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, 
+	    																		TableRow.LayoutParams.WRAP_CONTENT);
+	    paramTableRow.setMargins(100, 0, 0, 0);
+	    textRow.setLayoutParams(paramTableRow);
 	      
 	    TextView minorStringText = new TextView(HomeActivity.this);
 	    minorStringText.setText("Minor");
-	    minorStringText.setLayoutParams(params);
+	    minorStringText.setLayoutParams(paramTextView);
 	      
 	    TextView avgStringText = new TextView(HomeActivity.this);
 	    avgStringText.setText("Average");
-	    avgStringText.setLayoutParams(params);
+	    avgStringText.setLayoutParams(paramTextView);
 	      
 	    TextView medStringText = new TextView(HomeActivity.this);
 	    medStringText.setText("Median");
-	    medStringText.setLayoutParams(params);
+	    medStringText.setLayoutParams(paramTextView);
 	      
 	    textRow.addView(minorStringText);
 	    textRow.addView(avgStringText);
 	    textRow.addView(medStringText);
-	    tl.addView(textRow);
-	    
+	    distanceTable.addView(textRow);
+
 	    // Calculate the distance for each beacon and add this to the TextView.
 	    for (int i = 0; i < minorValues.size(); i ++) {
 	      int minorVal = minorValues.get(i);
@@ -146,42 +141,37 @@ public class HomeActivity extends Activity {
 	      double med = median(dist);
 	      
 	      TableRow newRow = new TableRow(HomeActivity.this);
-	      newRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
+	      newRow.setLayoutParams(paramTableRow);
 	      
 	      TextView minorText = new TextView(HomeActivity.this);
 	      minorText.setText(String.valueOf(minorVal));
-	      minorText.setLayoutParams(params);
+	      minorText.setLayoutParams(paramTextView);
 	      
 	      TextView avgText = new TextView(HomeActivity.this);
 	      avgText.setText(String.valueOf(df.format(avg)));
-	      avgText.setLayoutParams(params);
+	      avgText.setLayoutParams(paramTextView);
 	      
 	      TextView medText = new TextView(HomeActivity.this);
 	      medText.setText(String.valueOf(df.format(med)));
-	      medText.setLayoutParams(params);
+	      medText.setLayoutParams(paramTextView);
 	      
 	      newRow.addView(minorText);
 	      newRow.addView(avgText);
 	      newRow.addView(medText);
-	      tl.addView(newRow);
-	      
-	      results.append(minorVal + "\t\t\t\t\t" + df.format(avg) + "\t\t\t\t\t" + df.format(med) + "\n");
+	      distanceTable.addView(newRow);
 	    };
 	  }
     });
 
-    // Configure BeaconManager.
+    // Configure BeaconManager and set scanning interval.
     beaconManager = new BeaconManager(this);
     beaconManager.setForegroundScanPeriod(100, 0);
     beaconManager.setRangingListener(new BeaconManager.RangingListener() {
       @Override
       public void onBeaconsDiscovered(Region region, final List<Beacon> beacons) {
-        // Note that results are not delivered on UI thread.
         runOnUiThread(new Runnable() {
           @Override
           public void run() {
-            // Note that beacons reported here are already sorted by estimated
-            // distance between device and beacon.
             beaconlistButton.setText("List of beacons (Found: " + beacons.size() + ")");
             
             // Add distances to the ArrayLists.
