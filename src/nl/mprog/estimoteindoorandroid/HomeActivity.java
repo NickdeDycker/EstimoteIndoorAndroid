@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
@@ -27,12 +26,7 @@ import java.util.List;
 import java.util.HashMap;
  
 public class HomeActivity extends Activity {
-
   // Bluetooth and beacon constants.
-  private static final String TAG = HomeActivity.class.getSimpleName();
-
-  public static final String EXTRAS_BEACON = "extrasBeacon";
-
   private static final int REQUEST_ENABLE_BT = 1234;
   private static final Region ALL_ESTIMOTE_BEACONS_REGION = new Region("rid", null, null, null);
 
@@ -97,11 +91,40 @@ public class HomeActivity extends Activity {
         startActivity(mapPosIntent);
 	  }
     });
+
+    final TableLayout distanceTable = (TableLayout) findViewById(R.id.table_distance);
+    final TableLayout.LayoutParams paramTableRow = new TableLayout.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, 
+			TableRow.LayoutParams.WRAP_CONTENT);
+    paramTableRow.setMargins(50, 0, 0, 0);
+    final LayoutParams paramTextView = new TableRow.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f);
+    
+    // Set a button to show info
+    final Button infoButton = (Button) findViewById(R.id.info_button);
+    infoButton.setOnClickListener(new View.OnClickListener() {
+	  @Override
+	  public void onClick(View v) {
+		distanceTable.removeAllViews(); 
+		
+	    TableRow textRow = new TableRow(HomeActivity.this);
+	    textRow.setLayoutParams(paramTableRow);
+	    
+	    TextView infoText = new TextView(HomeActivity.this);
+	    infoText.setLayoutParams(paramTextView);
+	    infoText.setText("\nUUID: The ID of a beacon. They all have the same value " +
+	    		 "at production." + "\n\nMajor/Minor: 5 Digit identifier for the beacon. This " +
+	    		 "identifies only by the minor." + "\n\nRSSI: Received Signal Strength Indicator. This, together " +
+	    		 "measured power calculates the distance through a algorithm." + "\n\nMeasured Power: The RSSI " +
+	    		 "at a distance of 1 meter." + "\n\n\nThe distance is calculated through the median of a certain" +
+	    		 "amount of measurements.");
+	    
+	    textRow.addView(infoText);
+	    distanceTable.addView(textRow);
+	  }
+    });
     
     // DecimalFormat to show the distances with only 4 decimals.
     final DecimalFormat df = new DecimalFormat("#0.####");
     final Button measureButton = (Button) findViewById(R.id.single_measure);
-    final TableLayout distanceTable = (TableLayout) findViewById(R.id.table_distance);
     
     // The button will calculate the distance to each beacon and show this in a TextView.
     measureButton.setOnClickListener(new View.OnClickListener() {
@@ -110,10 +133,6 @@ public class HomeActivity extends Activity {
 		distanceTable.removeAllViews();
 
 	    TableRow textRow = new TableRow(HomeActivity.this);
-	    LayoutParams paramTextView = new TableRow.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f);
-	    TableLayout.LayoutParams paramTableRow = new TableLayout.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, 
-	    																		TableRow.LayoutParams.WRAP_CONTENT);
-	    paramTableRow.setMargins(100, 0, 0, 0);
 	    textRow.setLayoutParams(paramTableRow);
 	      
 	    TextView minorStringText = new TextView(HomeActivity.this);
@@ -259,7 +278,6 @@ public class HomeActivity extends Activity {
 	  try {
 	    beaconManager.stopRanging(ALL_ESTIMOTE_BEACONS_REGION);
 	  } catch (RemoteException e) {
-	    Log.d(TAG, "Error while stopping ranging", e);
 	  }
 	}
 	editPref.remove("intent_stop");

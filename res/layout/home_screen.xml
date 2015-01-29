@@ -1,45 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
+	android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
               
-  <TextView android:text="@string/formal_app_name"
-      	  	android:layout_width="match_parent"
-      	  	android:layout_height="wrap_content"   
-      	  	android:gravity="center" 
-      	  	android:textSize="24sp"/>
+	<TextView android:text="@string/formal_app_name"
+    	android:layout_width="match_parent"
+      	android:layout_height="wrap_content"   
+      	android:gravity="center" 
+      	android:textSize="24sp"/>
 
-  <Button android:id="@+id/beacon_list"
-      	  android:layout_width="match_parent"
-      	  android:layout_height="wrap_content"
-      	  android:textColor="@android:color/white"
-      	  android:background="@layout/custom_button"/>
+  	<Button android:id="@+id/beacon_list"
+    	android:layout_width="match_parent"
+      	android:layout_height="wrap_content"
+      	android:textColor="@android:color/white"
+      	android:background="@layout/custom_button"/>
 
-  <Button android:id="@+id/map_position"
-      	  android:layout_width="match_parent"
-      	  android:layout_height="wrap_content"
-      	  android:text="@string/map_button"
-      	  android:textColor="@android:color/white"
-      	  android:background="@layout/custom_button"/>
+  	<Button android:id="@+id/map_position"
+      	android:layout_width="match_parent"
+      	android:layout_height="wrap_content"
+      	android:text="@string/map_button"
+      	android:textColor="@android:color/white"
+      	android:background="@layout/custom_button"/>
   
-  <Button android:id="@+id/single_measure"
-      	  android:layout_width="match_parent"
-      	  android:layout_height="wrap_content"
-      	  android:text="@string/measure_button"
-      	  android:textColor="@android:color/white"
-      	  android:background="@layout/custom_button"/>
-
-  <TableLayout android:id="@+id/table_distance"
-      		   android:orientation="vertical"
-               android:layout_width="match_parent"
-               android:layout_height="match_parent"
- 			   android:stretchColumns="1">    
-  </TableLayout>
+  	<Button android:id="@+id/info_button"
+    	android:layout_width="match_parent"
+      	android:layout_height="wrap_content"
+      	android:text="@string/info"
+      	android:textColor="@android:color/white"
+      	android:background="@layout/custom_button"/>
   
-  <TextView android:id="@+id/show_result"
-      		android:layout_width="match_parent"
-      		android:layout_height="wrap_content"/>
+  	<Button android:id="@+id/single_measure"
+      	android:layout_width="match_parent"
+      	android:layout_height="wrap_content"
+      	android:text="@string/measure_button"
+      	android:textColor="@android:color/white"
+      	android:background="@layout/custom_button"/>
+
+  	<TableLayout android:id="@+id/table_distance"
+    	android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+ 		android:stretchColumns="1">
+ 		    
+  	</TableLayout>
+  
+  	<TextView android:id="@+id/show_result"
+    	android:layout_width="match_parent"
+      	android:layout_height="wrap_content"/>
   
 </LinearLayout>

@@ -40,8 +40,6 @@ public class MapPosActivity extends Activity {
   private SharedPreferences.Editor editPref;	
 
   // Bluetooth and Beacon constants.
-  public static final String EXTRAS_BEACON = "extrasBeacon";
-
   private static final int REQUEST_ENABLE_BT = 1234;
   private static final Region ALL_ESTIMOTE_BEACONS_REGION = new Region("rid", null, null, null);
 
@@ -60,12 +58,12 @@ public class MapPosActivity extends Activity {
   private Boolean reset = false;
   private ImageView mapImage;
   
-  float[] userPos = new float[]{0, 0, 0};
-  int measurements = 0; 
+  private float[] userPos = new float[]{0, 0, 0};
+  private int measurements = 0; 
   
   final ArrayList<Integer> minorValues = new ArrayList<Integer>();
-  HashMap<Integer, ArrayList<Double>> distances = new HashMap<Integer, ArrayList<Double>>();
-  HashMap<Integer, Double> distanceAvg = new HashMap<Integer, Double>();
+  private HashMap<Integer, ArrayList<Double>> distances = new HashMap<Integer, ArrayList<Double>>();
+  private HashMap<Integer, Double> distanceAvg = new HashMap<Integer, Double>();
   
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -447,7 +445,6 @@ public class MapPosActivity extends Activity {
 		
 	  editPref.putBoolean("intent_stop", false);
 	  editPref.commit();
-	  
       startActivity(intent);
 	  return true;
 	}

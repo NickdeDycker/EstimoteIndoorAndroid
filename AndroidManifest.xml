@@ -21,7 +21,6 @@
 
     <activity
         android:name="nl.mprog.estimoteindoorandroid.HomeActivity"
-        android:label="Estimote Demos"
         android:screenOrientation="portrait">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
@@ -40,8 +39,7 @@
         android:screenOrientation="portrait"/>
     
     <activity
-        android:name="nl.mprog.estimoteindoorandroid.singleBeaconActivity"
-        android:label="See position on map"
+        android:name="nl.mprog.estimoteindoorandroid.SingleBeaconActivity"
         android:screenOrientation="portrait"/>
 
     <!-- Estimote service responsible for scanning beacons. -->

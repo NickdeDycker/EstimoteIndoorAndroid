@@ -1,38 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    		  android:layout_width="match_parent"
-    		  android:layout_height="match_parent"
-    		  android:orientation="vertical" >
+	android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
  
     <TextView android:id="@+id/x_title"
-        	  android:layout_width="wrap_content"
-        	  android:layout_height="wrap_content"
-        	  android:text="@string/x_value"/>
+		android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/x_value"/>
     
     <EditText android:id="@+id/pos_x"
-        	  android:layout_width="wrap_content"
-        	  android:layout_height="wrap_content"
-        	  android:inputType="numberDecimal|numberSigned"/>
+		android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="numberDecimal|numberSigned"/>
     
     <TextView android:id="@+id/y_title"
-        	  android:layout_width="wrap_content"
-        	  android:layout_height="wrap_content"
-        	  android:text="@string/y_value"/>
+		android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/y_value"/>
     
     <EditText android:id="@+id/pos_y"
-        	  android:layout_width="wrap_content"
-        	  android:layout_height="wrap_content"
-        	  android:inputType="numberDecimal|numberSigned"/>
+		android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="numberDecimal|numberSigned"/>
 
     <TextView android:id="@+id/z_title"
-        	  android:layout_width="wrap_content"
-        	  android:layout_height="wrap_content"
-        	  android:text="@string/z_value"/>
+		android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/z_value"/>
     
     <EditText android:id="@+id/pos_z"
-        	  android:layout_width="wrap_content"
-        	  android:layout_height="wrap_content"
-        	  android:inputType="numberDecimal|numberSigned"/>
+		android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="numberDecimal|numberSigned"/>
     
 </LinearLayout>

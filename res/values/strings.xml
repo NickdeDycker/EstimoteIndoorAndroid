@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="app_name">EstimoteIndoorAndroid</string>
     <string name="action_settings">Settings</string>
     <string name="formal_app_name">Estimote Indoor Location\nfor Android</string>
@@ -11,5 +10,10 @@
     <string name="z_value">Enter the z value: </string>
     <string name="map_settings">Change the dimensions of the map</string>
     <string name="reset_pos">Reset</string>
-
+    <string name="info">Info</string>
+    <string name="minor">The minor: </string>
+    <string name="power">The current power: </string>
+    <string name="interval">The current interval: </string>
+    <string name="connecting">connecting...</string>
+    <string name="confirm">Confirm</string>
 </resources>

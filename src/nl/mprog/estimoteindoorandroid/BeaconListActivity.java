@@ -24,9 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 public class BeaconListActivity extends Activity {	
-  // Bluetooth and Beacon constants.
-  public static final String EXTRAS_BEACON = "extrasBeacon";
-  
+  // Bluetooth and Beacon constants. 
   private static final int REQUEST_ENABLE_BT = 1234;
   private static final Region ALL_ESTIMOTE_BEACONS_REGION = new Region("rid", null, null, null);
 
@@ -54,8 +52,8 @@ public class BeaconListActivity extends Activity {
     // Set a dialogAlerter to change values of a beacon.
     beaconListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
       public void onItemClick(AdapterView<?> parentView, View childView, int position, long id) {
-        Intent intentSingleBeacon = new Intent(BeaconListActivity.this, singleBeaconActivity.class);
-        intentSingleBeacon.putExtra(EXTRAS_BEACON, listViewAdapter.getItem(position));
+        Intent intentSingleBeacon = new Intent(BeaconListActivity.this, SingleBeaconActivity.class);
+        intentSingleBeacon.putExtra("getBeacon", listViewAdapter.getItem(position));
         startActivity(intentSingleBeacon);
       }
     });
